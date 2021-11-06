@@ -25,8 +25,17 @@ namespace NetworkUtil
         {
             TcpListener listener = new TcpListener(IPAddress.Any, port);
             listener.Start();
-            listener.BeginAcceptSocket(AcceptNewClient,null);
-            throw new NotImplementedException();
+            Tuple<Action<SocketState>, TcpListener> newClientState = new Tuple<Action<SocketState>, TcpListener>(toCall, listener);
+            try
+            {
+                listener.BeginAcceptSocket(AcceptNewClient, newClientState);
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
+            
+            return listener;
         }
 
         /// <summary>
@@ -49,7 +58,20 @@ namespace NetworkUtil
         /// 1) a delegate so the user can take action (a SocketState Action), and 2) the TcpListener</param>
         private static void AcceptNewClient(IAsyncResult ar)
         {
-            throw new NotImplementedException();
+            Tuple<Action<SocketState>, TcpListener> clientState = (Tuple<Action<SocketState>, TcpListener>)ar;
+            TcpListener listener = clientState.Item2;
+            Action<SocketState> toCall = clientState.Item1;
+            SocketState state;
+            try
+            {
+                Socket newClient = listener.EndAcceptSocket(ar);
+                state = new SocketState(toCall, newClient);
+                state.OnNetworkAction(state);
+            }
+            catch
+            {
+                
+            }
         }
 
         /// <summary>
