@@ -32,7 +32,7 @@ namespace NetworkUtil
             }
             catch(Exception e)
             {
-                throw e;
+                throw e; // TODO: check if a try-catch is needed here
             }
             
             return listener;
@@ -70,7 +70,12 @@ namespace NetworkUtil
             }
             catch
             {
-                
+                state = ReportSocketError(toCall, "Error accepting new client");
+            }
+
+            if (!state.ErrorOccurred)
+            {
+                listener.BeginAcceptSocket(AcceptNewClient, clientState);
             }
         }
 
@@ -79,7 +84,7 @@ namespace NetworkUtil
         /// </summary>
         public static void StopServer(TcpListener listener)
         {
-            throw new NotImplementedException();
+            listener.Stop();
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////
@@ -126,7 +131,9 @@ namespace NetworkUtil
                 // Didn't find any IPV4 addresses
                 if (!foundIPV4)
                 {
-                    // TODO: Indicate an error to the user, as specified in the documentation
+
+                    ReportSocketError(toCall, "IPV4 address not found");
+                    // Indicate an error to the user, as specified in the documentation
                 }
             }
             catch (Exception)
@@ -138,7 +145,8 @@ namespace NetworkUtil
                 }
                 catch (Exception)
                 {
-                    // TODO: Indicate an error to the user, as specified in the documentation
+                    ReportSocketError(toCall, "Invalid IP address");
+                    // Indicate an error to the user, as specified in the documentation
                 }
             }
 
@@ -151,6 +159,22 @@ namespace NetworkUtil
             socket.NoDelay = true;
 
             // TODO: Finish the remainder of the connection process as specified.
+
+            // TODO: detect timout
+
+            SocketState state = new SocketState(toCall, socket);
+
+            IAsyncResult result = state.TheSocket.BeginConnect(ipAddress, port, ConnectedCallback, state);
+
+            result.AsyncWaitHandle.WaitOne(3000, true); // wait on the thread connecting the socket for 3 seconds
+
+            if (!state.TheSocket.Connected) // socket connection timed out
+            {
+                state.ErrorOccurred = true;
+                state.ErrorMessage = "Connection timed out";
+                socket.Close();
+            }
+
         }
 
         /// <summary>
@@ -168,7 +192,25 @@ namespace NetworkUtil
         /// <param name="ar">The object asynchronously passed via BeginConnect</param>
         private static void ConnectedCallback(IAsyncResult ar)
         {
-            throw new NotImplementedException();
+            SocketState state = (SocketState)ar;
+            if (state.ErrorOccurred)
+            {
+                ReportSocketError(state.OnNetworkAction, state.ErrorMessage);
+            } else
+            {
+                try
+                {
+                    state.TheSocket.EndConnect(ar);
+                    state.OnNetworkAction(state);
+                }
+                catch
+                {
+                    ReportSocketError(state.OnNetworkAction, "Error connecting to socket");
+                }
+            }
+
+           
+
         }
 
 
@@ -278,6 +320,19 @@ namespace NetworkUtil
         private static void SendAndCloseCallback(IAsyncResult ar)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="toCall"></param>
+        private static SocketState ReportSocketError(Action<SocketState> toCall, string errorMessage)
+        {
+            SocketState state = new SocketState(toCall, null);
+            state.ErrorOccurred = true;
+            state.ErrorMessage = errorMessage;
+            state.OnNetworkAction(state);
+            return state;
         }
 
     }
