@@ -8,7 +8,7 @@ namespace NetworkUtil
 
     public static class Networking
     {
-        
+
 
         /////////////////////////////////////////////////////////////////////////////////////////
         // Server-Side Code
@@ -30,11 +30,11 @@ namespace NetworkUtil
             {
                 listener.BeginAcceptSocket(AcceptNewClient, newClientState);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e; // TODO: check if a try-catch is needed here
             }
-            
+
             return listener;
         }
 
@@ -58,7 +58,7 @@ namespace NetworkUtil
         /// 1) a delegate so the user can take action (a SocketState Action), and 2) the TcpListener</param>
         private static void AcceptNewClient(IAsyncResult ar)
         {
-            Tuple<Action<SocketState>, TcpListener> clientState = (Tuple<Action<SocketState>, TcpListener>)ar;
+            Tuple<Action<SocketState>, TcpListener> clientState = (Tuple<Action<SocketState>, TcpListener>)ar.AsyncState;
             TcpListener listener = clientState.Item2;
             Action<SocketState> toCall = clientState.Item1;
             SocketState state;
@@ -192,11 +192,12 @@ namespace NetworkUtil
         /// <param name="ar">The object asynchronously passed via BeginConnect</param>
         private static void ConnectedCallback(IAsyncResult ar)
         {
-            SocketState state = (SocketState)ar;
+            SocketState state = (SocketState)ar.AsyncState;
             if (state.ErrorOccurred)
             {
                 ReportSocketError(state.OnNetworkAction, state.ErrorMessage);
-            } else
+            }
+            else
             {
                 try
                 {
@@ -209,7 +210,7 @@ namespace NetworkUtil
                 }
             }
 
-           
+
 
         }
 
@@ -231,7 +232,17 @@ namespace NetworkUtil
         /// <param name="state">The SocketState to begin receiving</param>
         public static void GetData(SocketState state)
         {
-            throw new NotImplementedException();
+            try
+            {
+                state.TheSocket.BeginReceive(state.buffer, 0, state.buffer.Length, SocketFlags.None, ReceiveCallback, state);
+            }
+            catch
+            {
+                state.ErrorMessage = "Error during receive process";
+                state.ErrorOccurred = true;
+                state.OnNetworkAction(state);
+            }
+
         }
 
         /// <summary>
@@ -253,7 +264,23 @@ namespace NetworkUtil
         /// </param>
         private static void ReceiveCallback(IAsyncResult ar)
         {
-            throw new NotImplementedException();
+            SocketState state = (SocketState)ar.AsyncState;
+            Socket socket = state.TheSocket;
+            try
+            {
+                //TODO: Check if critical section
+                int bytesRead = socket.EndReceive(ar);
+                string message = Encoding.UTF8.GetString(state.buffer,
+                    0, bytesRead);
+                state.data.Append(message);
+            }
+            catch
+            {
+                state.ErrorMessage = "Error during receive process";
+                state.ErrorOccurred = true;
+                state.OnNetworkAction(state);
+            }
+            state.OnNetworkAction(state);
         }
 
         /// <summary>
@@ -268,7 +295,27 @@ namespace NetworkUtil
         /// <returns>True if the send process was started, false if an error occurs or the socket is already closed</returns>
         public static bool Send(Socket socket, string data)
         {
-            throw new NotImplementedException();
+            byte[] messageBytes = Encoding.UTF8.GetBytes(data);
+            // Begin sending the message
+            try
+            {
+                if (socket.Connected)
+                {
+                    socket.BeginSend(messageBytes, 0, messageBytes.Length, SocketFlags.None, SendCallback, socket);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+                
+            }
+            catch
+            {
+                socket.Close();
+                return false;
+            }
+            
         }
 
         /// <summary>
@@ -284,7 +331,8 @@ namespace NetworkUtil
         /// </param>
         private static void SendCallback(IAsyncResult ar)
         {
-            throw new NotImplementedException();
+            Socket socket = (Socket)ar.AsyncState;
+            socket.EndSend(ar);
         }
 
 
