@@ -70,7 +70,7 @@ namespace NetworkUtil
             }
             catch
             {
-                state = ReportSocketError(toCall, "Error accepting new client");
+                state = ReportSocketConnectionError(toCall, "Error accepting new client");
             }
 
             if (!state.ErrorOccurred)
@@ -132,7 +132,7 @@ namespace NetworkUtil
                 if (!foundIPV4)
                 {
 
-                    ReportSocketError(toCall, "IPV4 address not found");
+                    ReportSocketConnectionError(toCall, "IPV4 address not found");
                     // Indicate an error to the user, as specified in the documentation
                 }
             }
@@ -145,7 +145,7 @@ namespace NetworkUtil
                 }
                 catch (Exception)
                 {
-                    ReportSocketError(toCall, "Invalid IP address");
+                    ReportSocketConnectionError(toCall, "Invalid IP address");
                     // Indicate an error to the user, as specified in the documentation
                 }
             }
@@ -157,10 +157,6 @@ namespace NetworkUtil
             // Nagle's algorithm can cause problems for a latency-sensitive 
             // game like ours will be 
             socket.NoDelay = true;
-
-            // TODO: Finish the remainder of the connection process as specified.
-
-            // TODO: detect timout
 
             SocketState state = new SocketState(toCall, socket);
 
@@ -195,7 +191,7 @@ namespace NetworkUtil
             SocketState state = (SocketState)ar.AsyncState;
             if (state.ErrorOccurred)
             {
-                ReportSocketError(state.OnNetworkAction, state.ErrorMessage);
+                ReportSocketConnectionError(state.OnNetworkAction, state.ErrorMessage);
             }
             else
             {
@@ -206,7 +202,7 @@ namespace NetworkUtil
                 }
                 catch
                 {
-                    ReportSocketError(state.OnNetworkAction, "Error connecting to socket");
+                    ReportSocketConnectionError(state.OnNetworkAction, "Error connecting to socket");
                 }
             }
 
@@ -268,11 +264,13 @@ namespace NetworkUtil
             Socket socket = state.TheSocket;
             try
             {
-                //TODO: Check if critical section
                 int bytesRead = socket.EndReceive(ar);
                 string message = Encoding.UTF8.GetString(state.buffer,
                     0, bytesRead);
-                state.data.Append(message);
+                lock (state.data)
+                {
+                    state.data.Append(message);
+                }
             }
             catch
             {
@@ -297,25 +295,24 @@ namespace NetworkUtil
         {
             byte[] messageBytes = Encoding.UTF8.GetBytes(data);
             // Begin sending the message
-            try
+            if (socket.Connected)
             {
-                if (socket.Connected)
+                try
                 {
                     socket.BeginSend(messageBytes, 0, messageBytes.Length, SocketFlags.None, SendCallback, socket);
                     return true;
                 }
-                else
+                catch
                 {
+                    socket.Close();
                     return false;
                 }
-                
             }
-            catch
+            else
             {
-                socket.Close();
                 return false;
             }
-            
+
         }
 
         /// <summary>
@@ -331,8 +328,14 @@ namespace NetworkUtil
         /// </param>
         private static void SendCallback(IAsyncResult ar)
         {
-            Socket socket = (Socket)ar.AsyncState;
-            socket.EndSend(ar);
+            try
+            {
+                Socket socket = (Socket)ar.AsyncState;
+                socket.EndSend(ar);
+            }
+            catch // TODO: Ask Kopta about this
+            { }
+
         }
 
 
@@ -349,7 +352,26 @@ namespace NetworkUtil
         /// <returns>True if the send process was started, false if an error occurs or the socket is already closed</returns>
         public static bool SendAndClose(Socket socket, string data)
         {
-            throw new NotImplementedException();
+            byte[] messageBytes = Encoding.UTF8.GetBytes(data);
+            // Begin sending the message
+            if (socket.Connected)
+            {
+                try
+                {
+                    socket.BeginSend(messageBytes, 0, messageBytes.Length, SocketFlags.None, SendAndCloseCallback, socket);
+                    return true;
+                }
+                catch
+                {
+                    socket.Close();
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+
         }
 
         /// <summary>
@@ -367,14 +389,24 @@ namespace NetworkUtil
         /// </param>
         private static void SendAndCloseCallback(IAsyncResult ar)
         {
-            throw new NotImplementedException();
+            Socket socket = (Socket)ar.AsyncState;
+            try
+            {
+                socket.EndSend(ar);
+            }
+            catch // TODO: Ask Kopta about this
+            { }
+            finally
+            {
+                socket.Close();
+            }
         }
 
         /// <summary>
-        /// TODO
+        /// Returns a new SocketState object whose socket object is null. To be used when connection to a socket fails.
         /// </summary>
-        /// <param name="toCall"></param>
-        private static SocketState ReportSocketError(Action<SocketState> toCall, string errorMessage)
+        /// <param name="toCall">The OnNetworkAction delegate of the socket state (the method to call when a new connection is made)</param>
+        private static SocketState ReportSocketConnectionError(Action<SocketState> toCall, string errorMessage)
         {
             SocketState state = new SocketState(toCall, null);
             state.ErrorOccurred = true;
