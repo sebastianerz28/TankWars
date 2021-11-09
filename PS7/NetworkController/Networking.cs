@@ -164,8 +164,11 @@ namespace NetworkUtil
 
             result.AsyncWaitHandle.WaitOne(3000, true); // wait on the thread connecting the socket for 3 seconds
 
+
+            //TODO: Ask why code enters if statement when connected is true
             if (!state.TheSocket.Connected) // socket connection timed out
             {
+
                 state.ErrorOccurred = true;
                 state.ErrorMessage = "Connection timed out";
                 socket.Close();

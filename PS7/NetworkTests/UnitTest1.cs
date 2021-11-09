@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 using NetworkUtil;
+using System.Threading;
 namespace NetworkUtil
 {
 
@@ -470,6 +471,55 @@ namespace NetworkUtil
 
 
         //TODO: Add more of your own tests here
+        [DataRow(true)]
+        [DataRow(false)]
+        [DataTestMethod]
+        public void TestServerStop(bool clientSide)
+        {
+            SetupTestConnections(clientSide, out testListener, out testLocalSocketState, out testRemoteSocketState);
+            Networking.StopServer(testListener);
+            Assert.IsFalse(testListener.Server.Connected);
+        }
+
+        [DataRow(true)]
+        [DataRow(false)]
+        [DataTestMethod]
+        public void TestSendAndClose(bool clientSide)
+        {
+            SetupTestConnections(clientSide, out testListener, out testLocalSocketState, out testRemoteSocketState);
+            testLocalSocketState.OnNetworkAction = (x) =>
+            {
+                if (x.ErrorOccurred)
+                    return;
+                Networking.GetData(x);
+            };
+
+            Networking.GetData(testLocalSocketState);
+
+            StringBuilder message = new StringBuilder();
+            message.Append('a', (int)(SocketState.BufferSize * 7.5));
+
+            Networking.SendAndClose(testRemoteSocketState.TheSocket, message.ToString());
+
+            NetworkTestHelper.WaitForOrTimeout(() => testLocalSocketState.GetData().Length == message.Length, NetworkTestHelper.timeout);
+
+            Assert.AreEqual(message.ToString(), testLocalSocketState.GetData());
+            Assert.IsFalse(testRemoteSocketState.TheSocket.Connected);
+        }
+
+        [DataRow(true)]
+        [DataRow(false)]
+        [DataTestMethod]
+        public void TestGetDataImmediately(bool clientSide)
+        {
+            SetupTestConnections(clientSide, out testListener, out testLocalSocketState, out testRemoteSocketState);
+            Networking.GetData(testLocalSocketState);
+            Networking.GetData(testRemoteSocketState);
+            Thread.Sleep(2000);
+            Assert.IsFalse(testLocalSocketState.ErrorOccurred);
+            Assert.IsFalse(testRemoteSocketState.ErrorOccurred);
+        }
+
 
     }
 }
