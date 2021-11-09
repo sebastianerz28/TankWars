@@ -520,6 +520,32 @@ namespace NetworkUtil
             Assert.IsFalse(testRemoteSocketState.ErrorOccurred);
         }
 
+        [DataRow(true)]
+        [DataRow(false)]
+        [DataTestMethod]
+        public void TestGetDataLater(bool clientSide)
+        {
+            SetupTestConnections(clientSide, out testListener, out testLocalSocketState, out testRemoteSocketState);
+
+            string messageString = null;
+
+            testRemoteSocketState.OnNetworkAction = (x) =>
+            {
+                messageString = testRemoteSocketState.GetData();
+            };
+
+            Networking.GetData(testLocalSocketState);
+            Networking.GetData(testRemoteSocketState);
+            Thread.Sleep(2000);
+            Assert.IsFalse(testLocalSocketState.ErrorOccurred);
+            Assert.IsFalse(testRemoteSocketState.ErrorOccurred);
+
+            Networking.Send(testLocalSocketState.TheSocket, "Here's some data");
+            Thread.Sleep(2000);
+            Assert.AreEqual("Here's some data", messageString);
+
+        }
+
 
     }
 }
