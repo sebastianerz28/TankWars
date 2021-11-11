@@ -30,10 +30,8 @@ namespace NetworkUtil
             {
                 listener.BeginAcceptSocket(AcceptNewClient, newClientState);
             }
-            catch (Exception e)
-            {
-                throw e; // TODO: check if a try-catch is needed here
-            }
+            catch
+            {}
 
             return listener;
         }
@@ -109,8 +107,6 @@ namespace NetworkUtil
         /// <param name="port">The port on which the server is listening</param>
         public static void ConnectToServer(Action<SocketState> toCall, string hostName, int port)
         {
-            // TODO: This method is incomplete, but contains a starting point 
-            //       for decoding a host address
 
             // Establish the remote endpoint for the socket.
             IPHostEntry ipHostInfo;
@@ -165,7 +161,6 @@ namespace NetworkUtil
             result.AsyncWaitHandle.WaitOne(3000, true); // wait on the thread connecting the socket for 3 seconds
 
 
-            //TODO: Ask why code enters if statement when connected is true
             if (!state.TheSocket.Connected) // socket connection timed out
             {
 
@@ -336,7 +331,7 @@ namespace NetworkUtil
                 Socket socket = (Socket)ar.AsyncState;
                 socket.EndSend(ar);
             }
-            catch // TODO: Ask Kopta about this
+            catch
             { }
 
         }
@@ -397,7 +392,7 @@ namespace NetworkUtil
             {
                 socket.EndSend(ar);
             }
-            catch // TODO: Ask Kopta about this
+            catch
             { }
             finally
             {

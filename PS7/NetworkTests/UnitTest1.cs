@@ -470,7 +470,6 @@ namespace NetworkUtil
         /*** End Send/Receive Tests ***/
 
 
-        //TODO: Add more of your own tests here
         [DataRow(true)]
         [DataRow(false)]
         [DataTestMethod]
@@ -532,17 +531,17 @@ namespace NetworkUtil
             testRemoteSocketState.OnNetworkAction = (x) =>
             {
                 messageString = testRemoteSocketState.GetData();
+                Assert.AreEqual("Here's some data", messageString);
             };
 
             Networking.GetData(testLocalSocketState);
             Networking.GetData(testRemoteSocketState);
             Thread.Sleep(2000);
+
             Assert.IsFalse(testLocalSocketState.ErrorOccurred);
             Assert.IsFalse(testRemoteSocketState.ErrorOccurred);
 
             Networking.Send(testLocalSocketState.TheSocket, "Here's some data");
-            Thread.Sleep(2000);
-            Assert.AreEqual("Here's some data", messageString);
 
         }
 
