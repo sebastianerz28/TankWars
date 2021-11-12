@@ -31,7 +31,7 @@ namespace NetworkUtil
                 listener.BeginAcceptSocket(AcceptNewClient, newClientState);
             }
             catch
-            {}
+            { }
 
             return listener;
         }
@@ -232,9 +232,7 @@ namespace NetworkUtil
             }
             catch
             {
-                state.ErrorMessage = "Error during receive process";
-                state.ErrorOccurred = true;
-                state.OnNetworkAction(state);
+                HandleRecieveError(state, "Error during begin receive process");
             }
 
         }
@@ -263,20 +261,22 @@ namespace NetworkUtil
             try
             {
                 int bytesRead = socket.EndReceive(ar);
-                string message = Encoding.UTF8.GetString(state.buffer,
-                    0, bytesRead);
+                if (bytesRead == 0)
+                {
+                    HandleRecieveError(state, "Error during end receive process");
+                    return;
+                }
+                string message = Encoding.UTF8.GetString(state.buffer, 0, bytesRead);
                 lock (state.data)
                 {
                     state.data.Append(message);
                 }
+                state.OnNetworkAction(state);
             }
             catch
             {
-                state.ErrorMessage = "Error during receive process";
-                state.ErrorOccurred = true;
-                state.OnNetworkAction(state);
+                HandleRecieveError(state, "Error during end receive process");
             }
-            state.OnNetworkAction(state);
         }
 
         /// <summary>
@@ -411,6 +411,18 @@ namespace NetworkUtil
             state.ErrorMessage = errorMessage;
             state.OnNetworkAction(state);
             return state;
+        }
+
+        /// <summary>
+        /// Performs necessary changes to the SocketState in the event of an error during the recieve process
+        /// </summary>
+        /// <param name="state">the socket state</param>
+        /// <param name="message">the error message to be added to the state</param>
+        private static void HandleRecieveError(SocketState state, string message)
+        {
+            state.ErrorMessage = message;
+            state.ErrorOccurred = true;
+            state.OnNetworkAction(state);
         }
 
     }
