@@ -1,0 +1,24 @@
+﻿Nov 16 implementation notes
+
+- on the submit button to enter name and server address, validate that the fields are
+  not empty prior to calling the method in the controller to handle connection to server
+
+- Handshake:
+	- Handle errors (state.errorOccured)
+	- Send the player's name to the server (with a newline character)
+	- Set the ONA to a callback that will handle the next data being sent from the server
+		- use a method that processes the message that breaks the message into parts separated
+		- separated by a newline character (check the chat client for regex)
+		- use TryParse to make sure that the ID and world size are both int values
+		- remove the data from the state (does not need a lock)
+	- Set the ONA to a callback that will handle the JSON data for drawing the images
+		- handle errors
+		- JObject parse the message to find which object it is
+			
+			JObject obj = JObject.parse(//message)
+			// etc... 
+			// this is in a lecture slide (18 or 19?)
+
+		- deserialize the message
+
+
