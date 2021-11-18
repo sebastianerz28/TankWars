@@ -31,6 +31,7 @@ namespace View
                 return;
             }
             controller.Connect(IPTextBox.Text, playerNameTextBox.Text);
+            
         }
 
     }

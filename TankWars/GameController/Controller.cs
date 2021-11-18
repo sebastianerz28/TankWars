@@ -1,18 +1,27 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using GameModel;
 using NetworkUtil;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace GameController
 {
     public class Controller
     {
         private string playerName;
-        private int id;
-        private int worldSize;
+        public int id;
+        public int worldSize;
         private bool idInitialized = false;
         private bool worldSizeInitialized = false;
+        private World world;
 
         public delegate void ErrorOccuredHandler(string ErrorMessage);
+
+        public Controller()
+        {
+            world = new World();
+        }
         public void Connect(string hostName, string playerName)
         {
             this.playerName = playerName;
@@ -32,9 +41,43 @@ namespace GameController
             Networking.GetData(state);
         }
 
-        private void ReceiveWorld(SocketState state)
+        private void ReceiveWalls(SocketState state)
         {
-            //DO something
+            string totalData = state.GetData();
+            string [] parts = Regex.Split(totalData, @"(?<=[\n])");
+            lock (world)
+            {
+                foreach (string s in parts)
+                {
+                    JObject obj = JObject.Parse(s);
+
+                    JToken token = obj["wall"];
+                    if (token != null)
+                    {
+                        Wall w = JsonConvert.DeserializeObject<Wall>(s);
+                        world.walls.Add(w.id, w);
+                        continue;
+                    }
+
+                    token = obj["tank"];
+                    if (token != null)
+                    {
+                        Tank tank = JsonConvert.DeserializeObject<Tank>(s);
+                        world.tanks.Add(tank.ID, tank);
+                    }
+
+                    token = obj["proj"];
+                    if (token != null)
+                    {
+                        Projectile proj = JsonConvert.DeserializeObject<Projectile>(s);
+                        world.projectiles.Add(proj.id, proj);
+                    }
+                    token = obj["beam"];
+
+
+                }
+            }
+            
         }
 
         private void ReceiveStartup(SocketState state)
@@ -49,10 +92,11 @@ namespace GameController
             }
             else
             {
+                //TODO: handle case when id and worldsize cannot be parsed
                 id = int.Parse(parts[0]);
                 worldSize = int.Parse(parts[1]);
                 state.RemoveData(0, totalData.Length);
-                state.OnNetworkAction = ReceiveWorld;
+                state.OnNetworkAction = ReceiveWalls;
                 Networking.GetData(state);
             }
 
@@ -83,8 +127,10 @@ namespace GameController
             //state.RemoveData(0, p.Length);
             //}
 
-
+            Console.WriteLine(id + " " + worldSize);
         }
+
+        
 
         public event ErrorOccuredHandler ErrorOccurred;
     }
