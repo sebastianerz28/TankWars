@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using GameModel;
 using NetworkUtil;
@@ -50,22 +51,46 @@ namespace GameController
             {
                 foreach (string s in parts)
                 {
+                    Console.WriteLine(s);
+                    // Ignore empty strings added by the regex splitter
+                    if (s.Length == 0)
+                    {
+                        state.RemoveData(0, s.Length);
+                        continue;
+                    }
+
                     JObject obj = JObject.Parse(s);
 
                     JToken token = obj["wall"];
                     if (token != null)
                     {
                         Wall w = JsonConvert.DeserializeObject<Wall>(s);
-                        world.walls.Add(w.id, w);
-                        Console.WriteLine("Wall ID: " + w.id + "wall JSON: \n" + s);
+                        if(world.walls.ContainsKey(w.id))
+                        {
+                            world.walls[w.id] = w;
+                        } else
+                        {
+                            world.walls.Add(w.id, w);
+                        }
+                        Console.WriteLine("Wall ID: " + w.id + " JSON: \n" + s);
+                        state.RemoveData(0, s.Length);
                         continue;
+
                     }
 
                     token = obj["tank"];
                     if (token != null)
                     {
                         Tank tank = JsonConvert.DeserializeObject<Tank>(s);
-                        world.tanks.Add(tank.ID, tank);
+                        if (world.tanks.ContainsKey(tank.ID))
+                        {
+                            world.tanks[tank.ID] = tank;
+                        }
+                        else
+                        {
+                            world.tanks.Add(tank.ID, tank);
+                        }
+                        state.RemoveData(0, s.Length);
                         continue;
                     }
 
@@ -73,7 +98,15 @@ namespace GameController
                     if (token != null)
                     {
                         Projectile proj = JsonConvert.DeserializeObject<Projectile>(s);
-                        world.projectiles.Add(proj.id, proj);
+                        if (world.projectiles.ContainsKey(proj.id))
+                        {
+                            world.projectiles[proj.id] = proj;
+                        }
+                        else
+                        {
+                            world.projectiles.Add(proj.id, proj);
+                        }
+                        state.RemoveData(0, s.Length);
                         continue;
                     }
 
@@ -81,7 +114,15 @@ namespace GameController
                     if(token != null)
                     {
                         Beam beam = JsonConvert.DeserializeObject<Beam>(s);
-                        world.beams.Add(beam.id, beam);
+                        if (world.beams.ContainsKey(beam.id))
+                        {
+                            world.beams[beam.id] = beam;
+                        }
+                        else
+                        {
+                            world.beams.Add(beam.id, beam);
+                        }
+                        state.RemoveData(0, s.Length);
                         continue;
                     }
 
@@ -89,7 +130,15 @@ namespace GameController
                     if (token != null)
                     {
                         Powerup powerup = JsonConvert.DeserializeObject<Powerup>(s);
-                        world.powerups.Add(powerup.id, powerup);
+                        if (world.powerups.ContainsKey(powerup.id))
+                        {
+                            world.powerups[powerup.id] = powerup;
+                        }
+                        else
+                        {
+                            world.powerups.Add(powerup.id, powerup);
+                        }
+                        state.RemoveData(0, s.Length);
                         continue;
                     }
 
@@ -147,8 +196,6 @@ namespace GameController
 
             Console.WriteLine(id + " " + worldSize);
         }
-
-        
 
         public event ErrorOccuredHandler ErrorOccurred;
     }
