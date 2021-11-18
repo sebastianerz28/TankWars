@@ -22,6 +22,7 @@ namespace GameController
         {
             world = new World();
         }
+
         public void Connect(string hostName, string playerName)
         {
             this.playerName = playerName;
@@ -56,6 +57,7 @@ namespace GameController
                     {
                         Wall w = JsonConvert.DeserializeObject<Wall>(s);
                         world.walls.Add(w.id, w);
+                        Console.WriteLine("Wall ID: " + w.id + "wall JSON: \n" + s);
                         continue;
                     }
 
@@ -64,6 +66,7 @@ namespace GameController
                     {
                         Tank tank = JsonConvert.DeserializeObject<Tank>(s);
                         world.tanks.Add(tank.ID, tank);
+                        continue;
                     }
 
                     token = obj["proj"];
@@ -71,13 +74,28 @@ namespace GameController
                     {
                         Projectile proj = JsonConvert.DeserializeObject<Projectile>(s);
                         world.projectiles.Add(proj.id, proj);
+                        continue;
                     }
-                    token = obj["beam"];
 
+                    token = obj["beam"];
+                    if(token != null)
+                    {
+                        Beam beam = JsonConvert.DeserializeObject<Beam>(s);
+                        world.beams.Add(beam.id, beam);
+                        continue;
+                    }
+
+                    token = obj["power"];
+                    if (token != null)
+                    {
+                        Powerup powerup = JsonConvert.DeserializeObject<Powerup>(s);
+                        world.powerups.Add(powerup.id, powerup);
+                        continue;
+                    }
 
                 }
             }
-            
+            Networking.GetData(state);
         }
 
         private void ReceiveStartup(SocketState state)

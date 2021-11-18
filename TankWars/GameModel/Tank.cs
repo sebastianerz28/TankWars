@@ -6,6 +6,7 @@ using TankWars;
 
 namespace GameModel
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class Tank
     {
 
