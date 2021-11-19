@@ -18,6 +18,8 @@ namespace GameController
         private World world;
 
         public delegate void ErrorOccuredHandler(string ErrorMessage);
+        public delegate void StartDrawWorldHandler();
+        
 
         public Controller()
         {
@@ -81,6 +83,62 @@ namespace GameController
                     token = obj["tank"];
                     if (token != null)
                     {
+
+                        state.OnNetworkAction = ReceiveWorld;
+                        StartDrawWorld();
+                        continue;
+                    }
+
+                    token = obj["proj"];
+                    if (token != null)
+                    {
+                        state.OnNetworkAction = ReceiveWorld;
+                        StartDrawWorld();
+                        continue;
+                    }
+
+                    token = obj["beam"];
+                    if(token != null)
+                    {
+                        state.OnNetworkAction = ReceiveWorld;
+                        StartDrawWorld();
+                        continue;
+                    }
+
+                    token = obj["power"];
+                    if (token != null)
+                    {
+                        state.OnNetworkAction = ReceiveWorld;
+                        StartDrawWorld();
+                        continue;
+                    }
+
+                }
+            }
+            Networking.GetData(state);
+        }
+
+        private void ReceiveWorld(SocketState state)
+        {
+            string totalData = state.GetData();
+            string[] parts = Regex.Split(totalData, @"(?<=[\n])");
+            lock (world)
+            {
+                foreach (string s in parts)
+                {
+                    Console.WriteLine(s);
+                    // Ignore empty strings added by the regex splitter
+                    if (s.Length == 0)
+                    {
+                        state.RemoveData(0, s.Length);
+                        continue;
+                    }
+
+                    JObject obj = JObject.Parse(s);
+                    JToken token = obj["tank"];
+                    if (token != null)
+                    {
+
                         Tank tank = JsonConvert.DeserializeObject<Tank>(s);
                         if (world.tanks.ContainsKey(tank.ID))
                         {
@@ -111,7 +169,7 @@ namespace GameController
                     }
 
                     token = obj["beam"];
-                    if(token != null)
+                    if (token != null)
                     {
                         Beam beam = JsonConvert.DeserializeObject<Beam>(s);
                         if (world.beams.ContainsKey(beam.id))
@@ -162,6 +220,7 @@ namespace GameController
                 //TODO: handle case when id and worldsize cannot be parsed
                 id = int.Parse(parts[0]);
                 worldSize = int.Parse(parts[1]);
+                
                 state.RemoveData(0, totalData.Length);
                 state.OnNetworkAction = ReceiveWalls;
                 Networking.GetData(state);
@@ -196,7 +255,14 @@ namespace GameController
 
             Console.WriteLine(id + " " + worldSize);
         }
+        public World GetWorld()
+        {
+            return world;
+        }
 
+        public event StartDrawWorldHandler StartDrawWorld;
         public event ErrorOccuredHandler ErrorOccurred;
+        
     }
+    
 }

@@ -9,6 +9,7 @@ namespace GameModel
         public Dictionary<int, Projectile> projectiles = new Dictionary<int, Projectile>();
         public Dictionary<int, Beam> beams = new Dictionary<int, Beam>();
         public Dictionary<int, Powerup> powerups = new Dictionary<int, Powerup>();
+        
 
     }
 }

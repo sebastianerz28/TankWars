@@ -36,6 +36,9 @@
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="SpreadsheetPanel">
+      <HintPath>..\..\..\spreadsheet-sebastianerz28\Spreadsheet\SpreadsheetPanel\bin\Debug\SpreadsheetPanel.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -49,6 +52,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DrawingPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="TankWars.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -87,6 +93,14 @@
     <ProjectReference Include="..\GameController\GameController.csproj">
       <Project>{133cc8ad-d582-44e5-9f7d-477b33898a6f}</Project>
       <Name>GameController</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GameModel\GameModel.csproj">
+      <Project>{4d070ecf-7e1d-4737-9686-3cf7e8142b5a}</Project>
+      <Name>GameModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Vector2D\Vector2D.csproj">
+      <Project>{21B5E9AE-9405-4CB6-9E6C-E5F2A3648CE4}</Project>
+      <Name>Vector2D</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
