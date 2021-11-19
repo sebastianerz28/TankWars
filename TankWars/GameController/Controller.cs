@@ -13,13 +13,15 @@ namespace GameController
         private string playerName;
         public int id;
         public int worldSize;
-        private bool idInitialized = false;
-        private bool worldSizeInitialized = false;
+        //private bool idInitialized = false;
+        //private bool worldSizeInitialized = false;
         private World world;
 
         public delegate void ErrorOccuredHandler(string ErrorMessage);
-        public delegate void StartDrawWorldHandler();
-        
+        public delegate void ServerUpdateHandler();
+
+        public event ServerUpdateHandler UpdateArrived;
+        public event ErrorOccuredHandler ErrorOccurred;
 
         public Controller()
         {
@@ -36,7 +38,7 @@ namespace GameController
         {
             if (state.ErrorOccurred == true)
             {
-                ErrorOccurred(state.ErrorMessage);
+                ErrorOccurred("Could not connect to the server.");
                 return;
             }
 
@@ -48,7 +50,7 @@ namespace GameController
         private void ReceiveWalls(SocketState state)
         {
             string totalData = state.GetData();
-            string [] parts = Regex.Split(totalData, @"(?<=[\n])");
+            string[] parts = Regex.Split(totalData, @"(?<=[\n])");
             lock (world)
             {
                 foreach (string s in parts)
@@ -67,10 +69,11 @@ namespace GameController
                     if (token != null)
                     {
                         Wall w = JsonConvert.DeserializeObject<Wall>(s);
-                        if(world.walls.ContainsKey(w.id))
+                        if (world.walls.ContainsKey(w.id))
                         {
                             world.walls[w.id] = w;
-                        } else
+                        }
+                        else
                         {
                             world.walls.Add(w.id, w);
                         }
@@ -83,39 +86,66 @@ namespace GameController
                     token = obj["tank"];
                     if (token != null)
                     {
-
                         state.OnNetworkAction = ReceiveWorld;
-                        StartDrawWorld();
-                        continue;
+                        // Notify any listeners (the view) that a new game world has arrived from the server
+                        if (UpdateArrived != null)
+                            UpdateArrived();
+                        break;
                     }
 
                     token = obj["proj"];
                     if (token != null)
                     {
                         state.OnNetworkAction = ReceiveWorld;
-                        StartDrawWorld();
-                        continue;
+                        // Notify any listeners (the view) that a new game world has arrived from the server
+                        if (UpdateArrived != null)
+                            UpdateArrived();
+                        break;
                     }
 
                     token = obj["beam"];
-                    if(token != null)
+                    if (token != null)
                     {
                         state.OnNetworkAction = ReceiveWorld;
-                        StartDrawWorld();
-                        continue;
+                        // Notify any listeners (the view) that a new game world has arrived from the server
+                        if (UpdateArrived != null)
+                            UpdateArrived();
+                        break;
                     }
 
                     token = obj["power"];
                     if (token != null)
                     {
                         state.OnNetworkAction = ReceiveWorld;
-                        StartDrawWorld();
-                        continue;
+                        // Notify any listeners (the view) that a new game world has arrived from the server
+                        if (UpdateArrived != null)
+                            UpdateArrived();
+                        break;
                     }
 
                 }
             }
             Networking.GetData(state);
+        }
+
+        public void CancelMouseRequest()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void HandleMouseRequest()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void HandleMoveRequest()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CancelMoveRequest()
+        {
+            throw new NotImplementedException();
         }
 
         private void ReceiveWorld(SocketState state)
@@ -202,6 +232,11 @@ namespace GameController
 
                 }
             }
+
+            // Notify any listeners (the view) that a new game world has arrived from the server
+            if (UpdateArrived != null)
+                UpdateArrived();
+
             Networking.GetData(state);
         }
 
@@ -220,7 +255,7 @@ namespace GameController
                 //TODO: handle case when id and worldsize cannot be parsed
                 id = int.Parse(parts[0]);
                 worldSize = int.Parse(parts[1]);
-                
+
                 state.RemoveData(0, totalData.Length);
                 state.OnNetworkAction = ReceiveWalls;
                 Networking.GetData(state);
@@ -260,9 +295,8 @@ namespace GameController
             return world;
         }
 
-        public event StartDrawWorldHandler StartDrawWorld;
-        public event ErrorOccuredHandler ErrorOccurred;
-        
+
+
     }
-    
+
 }

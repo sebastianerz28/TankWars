@@ -26,27 +26,88 @@ namespace View
             InitializeComponent();
             world = controller.GetWorld();
             controller.ErrorOccurred += ErrorOccurredMessage;
-            controller.StartDrawWorld += Controller_StartDrawWorld;
+            controller.UpdateArrived += OnFrame;
             
-
+            // Place and add the drawing panel
             drawer = new DrawingPanel(world);
             drawer.Location = new Point(0, MenuSize);
             drawer.Size = new Size(ViewSize, ViewSize);
             this.Controls.Add(drawer);
 
-
+            // Set up key and mouse handlers
+            this.KeyDown += HandleKeyDown;
+            this.KeyUp += HandleKeyUp;
+            drawer.MouseDown += HandleMouseDown;
+            drawer.MouseUp += HandleMouseUp;
         }
 
-
-
-        private void Controller_StartDrawWorld()
+        /// <summary>
+        /// Handle mouse up
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HandleMouseUp(object sender, MouseEventArgs e)
         {
-            
+            if (e.Button == MouseButtons.Left)
+                controller.CancelMouseRequest();
+        }
+
+        /// <summary>
+        /// Handle mouse down
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HandleMouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+                controller.HandleMouseRequest();
+        }
+
+        /// <summary>
+        /// Key up handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HandleKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.W)
+                controller.CancelMoveRequest();
+        }
+
+        /// <summary>
+        /// Key down handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HandleKeyDown(object sender, KeyEventArgs e)
+        {
+            // TODO: added feature
+            //if (e.KeyCode == Keys.Escape)
+            //    Application.Exit();
+
+            if (e.KeyCode == Keys.W)
+                controller.HandleMoveRequest();
+
+            // Prevent other key handlers from running
+            e.SuppressKeyPress = true;
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Handler for the controller's UpdateArrived event
+        /// </summary>
+        private void OnFrame()
+        {
+            // Invalidate this form and all its children
+            // This will cause the form to redraw as soon as it can
+            MethodInvoker invoker = new MethodInvoker(() => this.Invalidate(true));
+            this.Invoke(invoker);
         }
 
         private void ErrorOccurredMessage(string message)
         {
             MessageBox.Show(message);
+            connectButton.Enabled = true;
         }
         private void connectButton_Click(object sender, EventArgs e)
         {
@@ -56,7 +117,7 @@ namespace View
                 return;
             }
             controller.Connect(IPTextBox.Text, playerNameTextBox.Text);
-            
+            connectButton.Enabled = false;
         }
 
     }

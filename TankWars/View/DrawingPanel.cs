@@ -116,6 +116,7 @@ namespace TankWars
             // since the image and world use different coordinate systems
             int viewSize = Size.Width; // view is square, so we can just use width
             e.Graphics.TranslateTransform(viewSize / 2, viewSize / 2);
+
             lock (theWorld)
             {
                 // Draw the players
