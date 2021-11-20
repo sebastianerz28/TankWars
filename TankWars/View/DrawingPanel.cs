@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,11 +13,16 @@ namespace TankWars
 {
     public class DrawingPanel : Panel
     {
+
         private World theWorld;
+        private Image background;
         public DrawingPanel(World w)
         {
             DoubleBuffered = true;
             theWorld = w;
+            Console.WriteLine(Directory.GetCurrentDirectory());
+            background = Image.FromFile(@"..\..\..\Resources\Images\Background.png");
+
         }
 
 
@@ -58,21 +64,18 @@ namespace TankWars
         {
             Tank p = o as Tank;
 
-            int width = 10;
-            int height = 10;
+           
+
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
             using (System.Drawing.SolidBrush blueBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Blue))
             using (System.Drawing.SolidBrush greenBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Green))
             {
-               /* // Rectangles are drawn starting from the top-left corner.
+                // Rectangles are drawn starting from the top-left corner.
                 // So if we want the rectangle centered on the player's location, we have to offset it
                 // by half its size to the left (-width/2) and up (-height/2)
-                Rectangle r = new Rectangle(-(width / 2), -(height / 2), width, height);
-
-                if (p.GetTeam() == 1) // team 1 is blue
-                    e.Graphics.FillRectangle(blueBrush, r);
-                else                  // team 2 is green
-                    e.Graphics.FillRectangle(greenBrush, r);*/
+                Rectangle r = new Rectangle(-(60 / 2), -(60 / 2), 60, 60);
+                e.Graphics.FillRectangle(redBrush, r);
             }
         }
 
@@ -106,7 +109,25 @@ namespace TankWars
                  if (p.GetKind() == 3) // black powerup
                      e.Graphics.FillEllipse(blackBrush, r);*/
             }
+
+
         }
+        
+        private void WallDrawer(object o, PaintEventArgs e)
+
+        {
+            Wall w = o as Wall;
+            int size = 50;
+
+            using (System.Drawing.SolidBrush greyBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Gray))
+            {
+                Rectangle r = new Rectangle(-(size / 2), -(size / 2), size, size);
+                e.Graphics.FillRectangle(greyBrush, r);
+            }
+
+        }
+
+        
 
 
         // This method is invoked when the DrawingPanel needs to be re-drawn
@@ -114,19 +135,33 @@ namespace TankWars
         {
             // Center the view on the middle of the world,
             // since the image and world use different coordinate systems
-            int viewSize = Size.Width; // view is square, so we can just use width
-            e.Graphics.TranslateTransform(viewSize / 2, viewSize / 2);
 
+            int viewSize = Size.Width; // view is square, so we can just use width
+            if (theWorld.GetTanks().TryGetValue(theWorld.GetPlayerId(), out Tank player))
+            {
+                double playerX = player.location.GetX();
+                double playerY = player.location.GetY();
+                e.Graphics.TranslateTransform((float)(-playerX + (viewSize / 2)), (float)(-playerY + (viewSize / 2)));
+            }
+            else
+            {
+                
+                e.Graphics.TranslateTransform(viewSize / 2, viewSize / 2);
+            }
+            
+            
             lock (theWorld)
             {
+
+
                 // Draw the players
-                foreach (Tank play in theWorld.tanks.Values)
+                foreach (Tank play in theWorld.GetTanks().Values)
                 {
                     DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.orientation.ToAngle(), PlayerDrawer);
                 }
 
                 // Draw the powerups
-                foreach (Powerup pow in theWorld.powerups.Values)
+                foreach (Powerup pow in theWorld.GetPowerups().Values)
                 {
                     DrawObjectWithTransform(e, pow, pow.loc.GetX(), pow.loc.GetY(), 0, PowerupDrawer);
                 }
@@ -136,6 +171,8 @@ namespace TankWars
             }
 
         }
+
+
 
     }
 }

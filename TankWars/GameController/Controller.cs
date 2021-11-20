@@ -69,13 +69,13 @@ namespace GameController
                     if (token != null)
                     {
                         Wall w = JsonConvert.DeserializeObject<Wall>(s);
-                        if (world.walls.ContainsKey(w.id))
+                        if (world.GetWalls().ContainsKey(w.id))
                         {
-                            world.walls[w.id] = w;
+                            world.GetWalls()[w.id] = w;
                         }
                         else
                         {
-                            world.walls.Add(w.id, w);
+                            world.GetWalls().Add(w.id, w);
                         }
                         Console.WriteLine("Wall ID: " + w.id + " JSON: \n" + s);
                         state.RemoveData(0, s.Length);
@@ -170,13 +170,13 @@ namespace GameController
                     {
 
                         Tank tank = JsonConvert.DeserializeObject<Tank>(s);
-                        if (world.tanks.ContainsKey(tank.ID))
+                        if (world.GetTanks().ContainsKey(tank.ID))
                         {
-                            world.tanks[tank.ID] = tank;
+                            world.GetTanks()[tank.ID] = tank;
                         }
                         else
                         {
-                            world.tanks.Add(tank.ID, tank);
+                            world.GetTanks().Add(tank.ID, tank);
                         }
                         state.RemoveData(0, s.Length);
                         continue;
@@ -186,13 +186,13 @@ namespace GameController
                     if (token != null)
                     {
                         Projectile proj = JsonConvert.DeserializeObject<Projectile>(s);
-                        if (world.projectiles.ContainsKey(proj.id))
+                        if (world.GetProjectiles().ContainsKey(proj.id))
                         {
-                            world.projectiles[proj.id] = proj;
+                            world.GetProjectiles()[proj.id] = proj;
                         }
                         else
                         {
-                            world.projectiles.Add(proj.id, proj);
+                            world.GetProjectiles().Add(proj.id, proj);
                         }
                         state.RemoveData(0, s.Length);
                         continue;
@@ -202,13 +202,13 @@ namespace GameController
                     if (token != null)
                     {
                         Beam beam = JsonConvert.DeserializeObject<Beam>(s);
-                        if (world.beams.ContainsKey(beam.id))
+                        if (world.GetBeams().ContainsKey(beam.id))
                         {
-                            world.beams[beam.id] = beam;
+                            world.GetBeams()[beam.id] = beam;
                         }
                         else
                         {
-                            world.beams.Add(beam.id, beam);
+                            world.GetBeams().Add(beam.id, beam);
                         }
                         state.RemoveData(0, s.Length);
                         continue;
@@ -218,13 +218,13 @@ namespace GameController
                     if (token != null)
                     {
                         Powerup powerup = JsonConvert.DeserializeObject<Powerup>(s);
-                        if (world.powerups.ContainsKey(powerup.id))
+                        if (world.GetPowerups().ContainsKey(powerup.id))
                         {
-                            world.powerups[powerup.id] = powerup;
+                            world.GetPowerups()[powerup.id] = powerup;
                         }
                         else
                         {
-                            world.powerups.Add(powerup.id, powerup);
+                            world.GetPowerups().Add(powerup.id, powerup);
                         }
                         state.RemoveData(0, s.Length);
                         continue;
@@ -254,6 +254,7 @@ namespace GameController
             {
                 //TODO: handle case when id and worldsize cannot be parsed
                 id = int.Parse(parts[0]);
+                world.SetPlayerID(id);
                 worldSize = int.Parse(parts[1]);
 
                 state.RemoveData(0, totalData.Length);
