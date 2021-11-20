@@ -20,9 +20,7 @@ namespace TankWars
         {
             DoubleBuffered = true;
             theWorld = w;
-            Console.WriteLine(Directory.GetCurrentDirectory());
-            background = Image.FromFile(@"..\..\..\Resources\Images\Background.png");
-
+            background = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\Background.png"), new Size(theWorld.GetWorldSize(), theWorld.GetWorldSize()));
         }
 
 
@@ -64,7 +62,7 @@ namespace TankWars
         {
             Tank p = o as Tank;
 
-           
+
 
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
@@ -112,7 +110,7 @@ namespace TankWars
 
 
         }
-        
+
         private void WallDrawer(object o, PaintEventArgs e)
 
         {
@@ -127,7 +125,7 @@ namespace TankWars
 
         }
 
-        
+
 
 
         // This method is invoked when the DrawingPanel needs to be re-drawn
@@ -142,14 +140,16 @@ namespace TankWars
                 double playerX = player.location.GetX();
                 double playerY = player.location.GetY();
                 e.Graphics.TranslateTransform((float)(-playerX + (viewSize / 2)), (float)(-playerY + (viewSize / 2)));
+
+                int backgroundX = -background.Width / 2 + theWorld.GetWorldSize() / 2;
+                int backgroundY = -background.Height / 2 + theWorld.GetWorldSize() / 2;
+                e.Graphics.DrawImage(background, new Point(backgroundX, backgroundY));
             }
             else
             {
-                
                 e.Graphics.TranslateTransform(viewSize / 2, viewSize / 2);
             }
-            
-            
+
             lock (theWorld)
             {
 

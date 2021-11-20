@@ -27,16 +27,23 @@ namespace View
             world = controller.GetWorld();
             controller.ErrorOccurred += ErrorOccurredMessage;
             controller.UpdateArrived += OnFrame;
-            
-            // Place and add the drawing panel
-            drawer = new DrawingPanel(world);
-            drawer.Location = new Point(0, MenuSize);
-            drawer.Size = new Size(ViewSize, ViewSize);
-            this.Controls.Add(drawer);
+            controller.WorldSizeArrived += InitializeDrawer;
 
             // Set up key and mouse handlers
             this.KeyDown += HandleKeyDown;
             this.KeyUp += HandleKeyUp;
+
+        }
+
+        private void InitializeDrawer()
+        {
+            // Place and add the drawing panel
+            drawer = new DrawingPanel(world);
+            drawer.Location = new Point(0, MenuSize);
+            drawer.Size = new Size(ViewSize, ViewSize);
+            MethodInvoker invoker = new MethodInvoker(() => Controls.Add(drawer));
+            Invoke(invoker);
+
             drawer.MouseDown += HandleMouseDown;
             drawer.MouseUp += HandleMouseUp;
         }

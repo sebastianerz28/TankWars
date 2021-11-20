@@ -12,16 +12,17 @@ namespace GameController
     {
         private string playerName;
         public int id;
-        public int worldSize;
         //private bool idInitialized = false;
         //private bool worldSizeInitialized = false;
         private World world;
 
         public delegate void ErrorOccuredHandler(string ErrorMessage);
         public delegate void ServerUpdateHandler();
+        public delegate void WorldSizeArrivedHandler();
 
         public event ServerUpdateHandler UpdateArrived;
         public event ErrorOccuredHandler ErrorOccurred;
+        public event WorldSizeArrivedHandler WorldSizeArrived;
 
         public Controller()
         {
@@ -130,22 +131,22 @@ namespace GameController
 
         public void CancelMouseRequest()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void HandleMouseRequest()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void HandleMoveRequest()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void CancelMoveRequest()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         private void ReceiveWorld(SocketState state)
@@ -255,8 +256,8 @@ namespace GameController
                 //TODO: handle case when id and worldsize cannot be parsed
                 id = int.Parse(parts[0]);
                 world.SetPlayerID(id);
-                worldSize = int.Parse(parts[1]);
-
+                world.SetWorldSize(int.Parse(parts[1]));
+                WorldSizeArrived();
                 state.RemoveData(0, totalData.Length);
                 state.OnNetworkAction = ReceiveWalls;
                 Networking.GetData(state);
@@ -289,7 +290,6 @@ namespace GameController
             //state.RemoveData(0, p.Length);
             //}
 
-            Console.WriteLine(id + " " + worldSize);
         }
         public World GetWorld()
         {
