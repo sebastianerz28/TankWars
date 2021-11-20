@@ -56,7 +56,9 @@ namespace GameController
             {
                 foreach (string s in parts)
                 {
-                    Console.WriteLine(s);
+
+                    if (!s.EndsWith("\n"))
+                        continue;
                     // Ignore empty strings added by the regex splitter
                     if (s.Length == 0)
                     {
@@ -161,7 +163,7 @@ namespace GameController
                     {
                         continue;
                     }
-                    Console.WriteLine(s);
+                    
                     // Ignore empty strings added by the regex splitter
                     if (s.Length == 0)
                     {
@@ -177,7 +179,15 @@ namespace GameController
                         Tank tank = JsonConvert.DeserializeObject<Tank>(s);
                         if (world.GetTanks().ContainsKey(tank.ID))
                         {
-                            world.GetTanks()[tank.ID] = tank;
+                            if (tank.disconnected)
+                            {
+                                world.GetTanks().Remove(tank.ID);
+                            }
+                            else
+                            {
+                                world.GetTanks()[tank.ID] = tank;
+                            }
+                            
                         }
                         else
                         {
@@ -193,6 +203,7 @@ namespace GameController
                         Projectile proj = JsonConvert.DeserializeObject<Projectile>(s);
                         if (world.GetProjectiles().ContainsKey(proj.id))
                         {
+                            
                             world.GetProjectiles()[proj.id] = proj;
                         }
                         else
@@ -250,7 +261,7 @@ namespace GameController
             string totalData = state.GetData();
             string[] parts = Regex.Split(totalData, @"(?<=[\n])"); //, RegexOptions.IgnorePatternWhitespace
 
-            if (parts.Length < 2 || !totalData.EndsWith("\n"))
+            if (parts.Length < 2 || (!parts[0].EndsWith("\n") && !parts[1].EndsWith("\n"))) 
             {
                 Networking.GetData(state);
                 return;
@@ -262,7 +273,7 @@ namespace GameController
                 world.SetPlayerID(id);
                 world.SetWorldSize(int.Parse(parts[1]));
                 WorldSizeArrived();
-                state.RemoveData(0, totalData.Length);
+                state.RemoveData(0, parts[0].Length + parts[1].Length);
                 state.OnNetworkAction = ReceiveWalls;
                 Networking.GetData(state);
             }

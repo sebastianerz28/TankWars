@@ -75,8 +75,6 @@ namespace TankWars
 
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
-            using (System.Drawing.SolidBrush blueBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Blue))
-            using (System.Drawing.SolidBrush greenBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Green))
             {
                 // Rectangles are drawn starting from the top-left corner.
                 // So if we want the rectangle centered on the player's location, we have to offset it
@@ -103,14 +101,13 @@ namespace TankWars
             int height = 8;
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
-            using (System.Drawing.SolidBrush yellowBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Yellow))
-            using (System.Drawing.SolidBrush blackBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Black))
             {
                 // Circles are drawn starting from the top-left corner.
                 // So if we want the circle centered on the powerup's location, we have to offset it
                 // by half its size to the left (-width/2) and up (-height/2)
-                Rectangle r = new Rectangle(-(width / 2), -(height / 2), width, height);
+                Rectangle r = new Rectangle(-(PowerupSize / 2), -(PowerupSize / 2), PowerupSize, PowerupSize);
 
+                e.Graphics.FillEllipse(redBrush, r);
                 /* if (p.GetKind() == 1) // red powerup
                      e.Graphics.FillEllipse(redBrush, r);
                  if (p.GetKind() == 2) // yellow powerup
@@ -124,7 +121,7 @@ namespace TankWars
 
         private void WallDrawer(object o, PaintEventArgs e)
         {
-            e.Graphics.DrawImage(wallImage, new Point((-WallSize / 2), -(WallSize / 2)));
+            e.Graphics.DrawImage(wallImage, new Point(-WallSize/2, -WallSize/2));
             //e.Graphics.DrawImage(wallImage, new Rectangle(-(WallSize / 2), -(WallSize / 2), WallSize, WallSize));
 
             //using (System.Drawing.TextureBrush wallBrush = new System.Drawing.TextureBrush(wallImage))
@@ -132,6 +129,23 @@ namespace TankWars
             //    Rectangle r = new Rectangle(-(WallSize / 2), -(WallSize / 2), WallSize, WallSize);
             //    e.Graphics.FillRectangle(wallBrush, r);
             //}
+        }
+
+        private void ProjectileDrawer(object o, PaintEventArgs e)
+        {
+            using(System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Blue))
+            {
+
+                e.Graphics.FillEllipse(redBrush, new Rectangle(-ProjectileSize / 2, -ProjectileSize / 2, ProjectileSize, ProjectileSize));
+            }
+        }
+
+        private void ExplosionDrawer(object o, PaintEventArgs e)
+        {
+            using (System.Drawing.SolidBrush lavenderBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Lavender))
+            {
+                e.Graphics.FillRectangle(lavenderBrush, new Rectangle(-(60 / 2), -(60 / 2), 60, 60));
+            }
         }
 
 
@@ -165,13 +179,20 @@ namespace TankWars
                 // Draw the players
                 foreach (Tank play in theWorld.GetTanks().Values)
                 {
-                    DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.orientation.ToAngle(), PlayerDrawer);
+                    if(play.hp > 0)
+                        DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.orientation.ToAngle(), PlayerDrawer);
+                    if (play.died || play.hp == 0)
+                    {
+                        DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), 0, ExplosionDrawer);
+                    }
+
                 }
 
                 // Draw the powerups
                 foreach (Powerup pow in theWorld.GetPowerups().Values)
                 {
-                    DrawObjectWithTransform(e, pow, pow.loc.GetX(), pow.loc.GetY(), 0, PowerupDrawer);
+                    if(!pow.died)
+                        DrawObjectWithTransform(e, pow, pow.loc.GetX(), pow.loc.GetY(), 0, PowerupDrawer);
                 }
 
                 foreach (Wall wall in theWorld.GetWalls().Values)
@@ -180,21 +201,48 @@ namespace TankWars
                     int distY = (int)((wall.p1.GetY() - wall.p2.GetY()) / WallSize);
                     int p2X = (int)wall.p2.GetX();
                     int p2Y = (int)wall.p2.GetY();
-
-                    for (int i = 0; i < (distX == 0 ? Math.Abs(distY) : Math.Abs(distX)); i++)
+                    
+                    for (int i = 0; i <= Math.Abs(distX == 0 ? distY : distX); i++)
                     {
+                        
+                        DrawObjectWithTransform(e, wall, p2X, p2Y, 0, WallDrawer);
                         if (distX != 0)
                         {
-                            p2X += WallSize;
+                            if(distX < 0)
+                            {
+                                p2X -= WallSize;
+                            }
+                            else
+                            {
+                                p2X += WallSize;
+                            }
+                            
                         }
                         else
                         {
-                            p2Y += WallSize;
+                            if(distY < 0)
+                            {
+                                p2Y -= WallSize;
+                            }
+                            else
+                            {
+                                p2Y += WallSize;
+                            }
+                            
                         }
-                        DrawObjectWithTransform(e, wall, p2X, p2Y, 0, WallDrawer);
                     }
 
                 }
+
+                foreach(Projectile p in theWorld.GetProjectiles().Values)
+                {
+                    if(!p.died)
+                        DrawObjectWithTransform(e, p, p.loc.GetX(), p.loc.GetY(), p.dir.ToAngle(), ProjectileDrawer);
+                }
+
+                
+
+                
 
                 // Do anything that Panel (from which we inherit) needs to do
                 base.OnPaint(e);
