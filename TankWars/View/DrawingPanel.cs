@@ -141,8 +141,8 @@ namespace TankWars
                 double playerY = player.location.GetY();
                 e.Graphics.TranslateTransform((float)(-playerX + (viewSize / 2)), (float)(-playerY + (viewSize / 2)));
 
-                int backgroundX = -background.Width / 2 + theWorld.GetWorldSize() / 2;
-                int backgroundY = -background.Height / 2 + theWorld.GetWorldSize() / 2;
+                int backgroundX = -theWorld.GetWorldSize() / 2;
+                int backgroundY = -theWorld.GetWorldSize() / 2;
                 e.Graphics.DrawImage(background, new Point(backgroundX, backgroundY));
             }
             else
