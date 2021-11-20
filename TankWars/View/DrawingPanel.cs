@@ -77,6 +77,8 @@ namespace TankWars
             }
         }
 
+
+
         /// <summary>
         /// Acts as a drawing delegate for DrawObjectWithTransform
         /// After performing the necessary transformation (translate/rotate)
@@ -116,6 +118,7 @@ namespace TankWars
         {
             Wall w = o as Wall;
             int size = 50;
+            
 
             using (System.Drawing.SolidBrush greyBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Gray))
             {
@@ -124,6 +127,8 @@ namespace TankWars
             }
 
         }
+
+        
 
 
 
@@ -164,6 +169,28 @@ namespace TankWars
                 foreach (Powerup pow in theWorld.GetPowerups().Values)
                 {
                     DrawObjectWithTransform(e, pow, pow.loc.GetX(), pow.loc.GetY(), 0, PowerupDrawer);
+                }
+
+                foreach (Wall wall in theWorld.GetWalls().Values)
+                {
+                    int distX = (int)((wall.p1.GetX() - wall.p2.GetX()) / 50);
+                    int distY = (int)((wall.p1.GetY() - wall.p2.GetY()) / 50);
+                    int p2X = (int)wall.p2.GetX();
+                    int p2Y = (int)wall.p2.GetY();
+
+                    for (int i = 0; i < (distX == 0 ? distY:distX); i++)
+                    {
+                        if(distX != 0)
+                        {
+                            p2X += 50;
+                        }
+                        else
+                        {
+                            p2Y += 50;
+                        }
+                        DrawObjectWithTransform(e, wall, p2X, p2Y, 0, WallDrawer);
+                    }
+                    
                 }
 
                 // Do anything that Panel (from which we inherit) needs to do
