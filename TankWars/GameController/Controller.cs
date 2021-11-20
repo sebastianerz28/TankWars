@@ -157,6 +157,10 @@ namespace GameController
             {
                 foreach (string s in parts)
                 {
+                    if (!s.EndsWith("\n"))
+                    {
+                        continue;
+                    }
                     Console.WriteLine(s);
                     // Ignore empty strings added by the regex splitter
                     if (s.Length == 0)

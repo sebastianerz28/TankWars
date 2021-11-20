@@ -16,11 +16,20 @@ namespace TankWars
 
         private World theWorld;
         private Image background;
+        private Image wallImage;
+
+        private const int WallSize = 50;
+        private const int TankSize = 60;
+        private const int TurretSize = 50;
+        private const int ProjectileSize = 30;
+        private const int PowerupSize = 10;
+
         public DrawingPanel(World w)
         {
             DoubleBuffered = true;
             theWorld = w;
             background = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\Background.png"), new Size(theWorld.GetWorldSize(), theWorld.GetWorldSize()));
+            wallImage = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\WallSprite.png"), new Size(WallSize, WallSize));
         }
 
 
@@ -114,22 +123,16 @@ namespace TankWars
         }
 
         private void WallDrawer(object o, PaintEventArgs e)
-
         {
-            Wall w = o as Wall;
-            int size = 50;
-            
+            e.Graphics.DrawImage(wallImage, new Point((-WallSize / 2), -(WallSize / 2)));
+            //e.Graphics.DrawImage(wallImage, new Rectangle(-(WallSize / 2), -(WallSize / 2), WallSize, WallSize));
 
-            using (System.Drawing.SolidBrush greyBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Gray))
-            {
-                Rectangle r = new Rectangle(-(size / 2), -(size / 2), size, size);
-                e.Graphics.FillRectangle(greyBrush, r);
-            }
-
+            //using (System.Drawing.TextureBrush wallBrush = new System.Drawing.TextureBrush(wallImage))
+            //{
+            //    Rectangle r = new Rectangle(-(WallSize / 2), -(WallSize / 2), WallSize, WallSize);
+            //    e.Graphics.FillRectangle(wallBrush, r);
+            //}
         }
-
-        
-
 
 
 
@@ -173,24 +176,24 @@ namespace TankWars
 
                 foreach (Wall wall in theWorld.GetWalls().Values)
                 {
-                    int distX = (int)((wall.p1.GetX() - wall.p2.GetX()) / 50);
-                    int distY = (int)((wall.p1.GetY() - wall.p2.GetY()) / 50);
+                    int distX = (int)((wall.p1.GetX() - wall.p2.GetX()) / WallSize);
+                    int distY = (int)((wall.p1.GetY() - wall.p2.GetY()) / WallSize);
                     int p2X = (int)wall.p2.GetX();
                     int p2Y = (int)wall.p2.GetY();
 
-                    for (int i = 0; i < (distX == 0 ? distY:distX); i++)
+                    for (int i = 0; i < (distX == 0 ? Math.Abs(distY) : Math.Abs(distX)); i++)
                     {
-                        if(distX != 0)
+                        if (distX != 0)
                         {
-                            p2X += 50;
+                            p2X += WallSize;
                         }
                         else
                         {
-                            p2Y += 50;
+                            p2Y += WallSize;
                         }
                         DrawObjectWithTransform(e, wall, p2X, p2Y, 0, WallDrawer);
                     }
-                    
+
                 }
 
                 // Do anything that Panel (from which we inherit) needs to do
