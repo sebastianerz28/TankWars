@@ -22,7 +22,7 @@ namespace View
         private const int ViewSize = 900;
         public TankWars()
         {
-            
+
             InitializeComponent();
             world = controller.GetWorld();
             controller.ErrorOccurred += ErrorOccurredMessage;
@@ -46,6 +46,12 @@ namespace View
 
             drawer.MouseDown += HandleMouseDown;
             drawer.MouseUp += HandleMouseUp;
+            drawer.MouseHover += HandleMouseHover;
+        }
+
+        private void HandleMouseHover(object sender, EventArgs e)
+        {
+            controller.HandleMouseHover(MousePosition);
         }
 
         /// <summary>
@@ -56,7 +62,7 @@ namespace View
         private void HandleMouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
-                controller.CancelMouseRequest();
+                controller.CancelMouseRequest(e);
         }
 
         /// <summary>
@@ -66,9 +72,9 @@ namespace View
         /// <param name="e"></param>
         private void HandleMouseDown(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
-                controller.HandleMouseRequest();
+            controller.HandleMouseRequest(e);
         }
+
 
         /// <summary>
         /// Key up handler
@@ -78,7 +84,7 @@ namespace View
         private void HandleKeyUp(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.W)
-                controller.CancelMoveRequest();
+                controller.CancelMoveRequest(e);
         }
 
         /// <summary>
@@ -93,7 +99,7 @@ namespace View
             //    Application.Exit();
 
             if (e.KeyCode == Keys.W)
-                controller.HandleMoveRequest();
+                controller.HandleMoveRequest(e);
 
             // Prevent other key handlers from running
             e.SuppressKeyPress = true;
@@ -108,6 +114,7 @@ namespace View
             // Invalidate this form and all its children
             // This will cause the form to redraw as soon as it can
             MethodInvoker invoker = new MethodInvoker(() => this.Invalidate(true));
+            // TODO: fix this bug
             this.Invoke(invoker);
         }
 
@@ -115,16 +122,20 @@ namespace View
         {
             MessageBox.Show(message);
             connectButton.Enabled = true;
+            IPTextBox.Enabled = true;
+            playerNameTextBox.Enabled = true;
         }
         private void connectButton_Click(object sender, EventArgs e)
         {
-            if(IPTextBox.Text == "" || playerNameTextBox.Text == "")
+            if (IPTextBox.Text == "" || playerNameTextBox.Text == "")
             {
                 MessageBox.Show("IP or player name cannot be blank");
                 return;
             }
             controller.Connect(IPTextBox.Text, playerNameTextBox.Text);
             connectButton.Enabled = false;
+            IPTextBox.Enabled = false;
+            playerNameTextBox.Enabled = false;
         }
 
     }

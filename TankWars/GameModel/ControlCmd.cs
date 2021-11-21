@@ -9,16 +9,16 @@ namespace GameModel
     [JsonObject]
     public class ControlCmd
     {
-        // TODO: Normalize vector
         [JsonProperty]
-        public string moving { get; private set; }
+        public string moving { get; set; }
 
         [JsonProperty]
-        public string fire { get; private set; }
+        public string fire { get; set; }
 
         [JsonProperty]
-        public Vector2D tdir { get; private set; }
+        public Vector2D tdir { get; set; }
 
         public ControlCmd() { }
+
     }
 }

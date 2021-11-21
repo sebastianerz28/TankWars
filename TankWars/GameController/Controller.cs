@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using GameModel;
 using NetworkUtil;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TankWars;
 
 namespace GameController
 {
@@ -12,9 +16,8 @@ namespace GameController
     {
         private string playerName;
         public int id;
-        //private bool idInitialized = false;
-        //private bool worldSizeInitialized = false;
         private World world;
+        private Socket socket;
 
         public delegate void ErrorOccuredHandler(string ErrorMessage);
         public delegate void ServerUpdateHandler();
@@ -24,9 +27,13 @@ namespace GameController
         public event ErrorOccuredHandler ErrorOccurred;
         public event WorldSizeArrivedHandler WorldSizeArrived;
 
+        private ControlCmd controlCmd = new ControlCmd();
+
         public Controller()
         {
             world = new World();
+            controlCmd.moving = "none";
+            controlCmd.fire = "none";
         }
 
         public void Connect(string hostName, string playerName)
@@ -43,6 +50,7 @@ namespace GameController
                 return;
             }
 
+            socket = state.TheSocket;
             state.OnNetworkAction = ReceiveStartup;
             Networking.Send(state.TheSocket, playerName + "\n");
             Networking.GetData(state);
@@ -131,22 +139,32 @@ namespace GameController
             Networking.GetData(state);
         }
 
-        public void CancelMouseRequest()
+        public void HandleMouseHover(Point mousePosition)
+        {
+            lock (controlCmd)
+            {
+                controlCmd.tdir = new Vector2D(mousePosition.X, mousePosition.Y);
+                controlCmd.tdir.Normalize();
+            }
+
+        }
+
+        public void CancelMouseRequest(MouseEventArgs e)
         {
             //throw new NotImplementedException();
         }
 
-        public void HandleMouseRequest()
+        public void HandleMouseRequest(MouseEventArgs e)
         {
             //throw new NotImplementedException();
         }
 
-        public void HandleMoveRequest()
+        public void HandleMoveRequest(KeyEventArgs e)
         {
             //throw new NotImplementedException();
         }
 
-        public void CancelMoveRequest()
+        public void CancelMoveRequest(KeyEventArgs e)
         {
             //throw new NotImplementedException();
         }
