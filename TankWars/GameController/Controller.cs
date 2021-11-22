@@ -19,7 +19,9 @@ namespace GameController
         private World world;
         private Socket socket;
 
-
+        //private Dictionary<string, bool> keyPressed;
+        private string prevKeyPress = "none";
+        private string currentKeyPress = "none";
 
         public delegate void ErrorOccuredHandler(string ErrorMessage);
         public delegate void ServerUpdateHandler();
@@ -28,7 +30,7 @@ namespace GameController
         public event ServerUpdateHandler UpdateArrived;
         public event ErrorOccuredHandler ErrorOccurred;
         public event WorldSizeArrivedHandler WorldSizeArrived;
-        private string jsonString; 
+        private string jsonString;
         private ControlCmd controlCmd = new ControlCmd();
 
         public Controller()
@@ -36,6 +38,10 @@ namespace GameController
             world = new World();
             controlCmd.moving = "none";
             controlCmd.fire = "none";
+            //keyPressed.Add("up", false);
+            //keyPressed.Add("down", false);
+            //keyPressed.Add("right", false);
+            //keyPressed.Add("left", false);
         }
 
         public void Connect(string hostName, string playerName)
@@ -145,15 +151,15 @@ namespace GameController
         {
             lock (controlCmd)
             {
-                
-                
+
+
                 Vector2D tankLoc;
                 if (world.GetTanks().TryGetValue(id, out Tank value))
                     tankLoc = value.location;
 
                 controlCmd.tdir = new Vector2D(mousePosition.X - (viewSize / 2.0), mousePosition.Y - (viewSize / 2.0));
                 controlCmd.tdir.Normalize();
-                
+
             }
 
         }
@@ -172,55 +178,125 @@ namespace GameController
 
         public void HandleMouseRequest(MouseEventArgs e)
         {
-            if(e.Button == MouseButtons.Left)
+            if (e.Button == MouseButtons.Left)
             {
                 controlCmd.fire = "main";
             }
-            else if( e.Button == MouseButtons.Right)
+            else if (e.Button == MouseButtons.Right)
             {
                 controlCmd.fire = "beam";
             }
         }
 
-        public void HandleMoveRequest(KeyEventArgs e)
-        {
-            if(e.KeyCode == Keys.W)
-            {
-                controlCmd.moving = "up";
-
-            }
-            else if (e.KeyCode == Keys.A)
-            {
-                controlCmd.moving = "left";
-            }
-            else if(e.KeyCode == Keys.D)
-            {
-                controlCmd.moving = "right";
-            }
-            else if (e.KeyCode == Keys.S)
-            {
-                controlCmd.moving = "down";
-            }
-        }
-
-        public void CancelMoveRequest(KeyEventArgs e)
+        public void HandleMoveRequest(KeyEventArgs e) // TODO: create a private method to reduce code
         {
             if (e.KeyCode == Keys.W)
             {
-                controlCmd.moving = "none";
-
+                if (currentKeyPress != "up")
+                {
+                    prevKeyPress = currentKeyPress;
+                    currentKeyPress = "up";
+                    controlCmd.moving = "up";
+                }
+                //keyPressed["up"] = true;
+                //controlCmd.moving = "up";
             }
             else if (e.KeyCode == Keys.A)
             {
-                controlCmd.moving = "none";
+                if (currentKeyPress != "left")
+                {
+                    prevKeyPress = currentKeyPress;
+                    currentKeyPress = "left";
+                    controlCmd.moving = "left";
+                }
+                //keyPressed["left"] = true;
+                //controlCmd.moving = "left";
             }
             else if (e.KeyCode == Keys.D)
             {
-                controlCmd.moving = "none";
+                if (currentKeyPress != "right")
+                {
+                    prevKeyPress = currentKeyPress;
+                    currentKeyPress = "right";
+                    controlCmd.moving = "right";
+                }
+                //keyPressed["right"] = true;
+                //controlCmd.moving = "right";
             }
             else if (e.KeyCode == Keys.S)
             {
-                controlCmd.moving = "none";
+                if (currentKeyPress != "down")
+                {
+                    prevKeyPress = currentKeyPress;
+                    currentKeyPress = "down";
+                    controlCmd.moving = "down";
+                }
+                //keyPressed["down"] = true;
+                //controlCmd.moving = "down";
+            }
+        }
+
+        public void CancelMoveRequest(KeyEventArgs e) // TODO: create a private method to reduce code
+        {
+            if (e.KeyCode == Keys.W)
+            {
+                if (currentKeyPress == "up")
+                {
+                    currentKeyPress = prevKeyPress;
+                    controlCmd.moving = prevKeyPress;
+                    prevKeyPress = "none";
+                }
+                else if (prevKeyPress == "up")
+                {
+                    prevKeyPress = "none";
+                }
+                //keyPressed["up"] = false;
+                //controlCmd.moving = "none";
+            }
+            else if (e.KeyCode == Keys.A)
+            {
+                if (currentKeyPress == "left")
+                {
+                    currentKeyPress = prevKeyPress;
+                    controlCmd.moving = prevKeyPress;
+                    prevKeyPress = "none";
+                }
+                else if (prevKeyPress == "left")
+                {
+                    prevKeyPress = "none";
+                }
+                //keyPressed["left"] = false;
+                //controlCmd.moving = "none";
+            }
+            else if (e.KeyCode == Keys.D)
+            {
+                if (currentKeyPress == "right")
+                {
+                    currentKeyPress = prevKeyPress;
+                    controlCmd.moving = prevKeyPress;
+                    prevKeyPress = "none";
+                }
+                else if (prevKeyPress == "right")
+                {
+                    prevKeyPress = "none";
+                }
+                //keyPressed["right"] = false;
+                //controlCmd.moving = "none";
+            }
+            else if (e.KeyCode == Keys.S)
+            {
+                if (currentKeyPress == "down")
+                {
+                    currentKeyPress = prevKeyPress;
+                    controlCmd.moving = prevKeyPress;
+                    prevKeyPress = "none";
+                }
+                else if (prevKeyPress == "up")
+                {
+                    prevKeyPress = "down";
+                }
+                //keyPressed["down"] = false;
+                //controlCmd.moving = "none";
             }
         }
 
@@ -236,7 +312,7 @@ namespace GameController
                     {
                         continue;
                     }
-                    
+
                     // Ignore empty strings added by the regex splitter
                     if (s.Length == 0)
                     {
@@ -260,7 +336,7 @@ namespace GameController
                             {
                                 world.GetTanks()[tank.ID] = tank;
                             }
-                            
+
                         }
                         else
                         {
@@ -276,7 +352,7 @@ namespace GameController
                         Projectile proj = JsonConvert.DeserializeObject<Projectile>(s);
                         if (world.GetProjectiles().ContainsKey(proj.id))
                         {
-                            
+
                             world.GetProjectiles()[proj.id] = proj;
                         }
                         else
@@ -327,8 +403,8 @@ namespace GameController
                 UpdateArrived();
 
             jsonString = JsonConvert.SerializeObject(controlCmd) + "\n";
-            
-            if(controlCmd.tdir != null)
+
+            if (controlCmd.tdir != null)
             {
                 Networking.Send(state.TheSocket, jsonString);
             }
@@ -340,7 +416,7 @@ namespace GameController
             string totalData = state.GetData();
             string[] parts = Regex.Split(totalData, @"(?<=[\n])"); //, RegexOptions.IgnorePatternWhitespace
 
-            if (parts.Length < 2 || (!parts[0].EndsWith("\n") && !parts[1].EndsWith("\n"))) 
+            if (parts.Length < 2 || (!parts[0].EndsWith("\n") && !parts[1].EndsWith("\n")))
             {
                 Networking.GetData(state);
                 return;

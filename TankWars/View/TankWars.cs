@@ -101,7 +101,7 @@ namespace View
 
             controller.HandleMoveRequest(e);
 
-            // Prevent other key handlers from running
+            //// Prevent other key handlers from running
             e.SuppressKeyPress = true;
             e.Handled = true;
         }
