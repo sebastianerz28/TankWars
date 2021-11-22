@@ -19,6 +19,8 @@ namespace GameController
         private World world;
         private Socket socket;
 
+
+
         public delegate void ErrorOccuredHandler(string ErrorMessage);
         public delegate void ServerUpdateHandler();
         public delegate void WorldSizeArrivedHandler();
@@ -26,7 +28,7 @@ namespace GameController
         public event ServerUpdateHandler UpdateArrived;
         public event ErrorOccuredHandler ErrorOccurred;
         public event WorldSizeArrivedHandler WorldSizeArrived;
-
+        private string jsonString; 
         private ControlCmd controlCmd = new ControlCmd();
 
         public Controller()
@@ -139,34 +141,87 @@ namespace GameController
             Networking.GetData(state);
         }
 
-        public void HandleMouseHover(Point mousePosition)
+        public void HandleMouseMove(Point mousePosition, int viewSize)
         {
             lock (controlCmd)
             {
-                controlCmd.tdir = new Vector2D(mousePosition.X, mousePosition.Y);
+                
+                
+                Vector2D tankLoc;
+                if (world.GetTanks().TryGetValue(id, out Tank value))
+                    tankLoc = value.location;
+
+                controlCmd.tdir = new Vector2D(mousePosition.X - (viewSize / 2.0), mousePosition.Y - (viewSize / 2.0));
                 controlCmd.tdir.Normalize();
+                
             }
 
         }
 
         public void CancelMouseRequest(MouseEventArgs e)
         {
-            //throw new NotImplementedException();
+            if (e.Button == MouseButtons.Left)
+            {
+                controlCmd.fire = "none";
+            }
+            else if (e.Button == MouseButtons.Right)
+            {
+                controlCmd.fire = "none";
+            }
         }
 
         public void HandleMouseRequest(MouseEventArgs e)
         {
-            //throw new NotImplementedException();
+            if(e.Button == MouseButtons.Left)
+            {
+                controlCmd.fire = "main";
+            }
+            else if( e.Button == MouseButtons.Right)
+            {
+                controlCmd.fire = "beam";
+            }
         }
 
         public void HandleMoveRequest(KeyEventArgs e)
         {
-            //throw new NotImplementedException();
+            if(e.KeyCode == Keys.W)
+            {
+                controlCmd.moving = "up";
+
+            }
+            else if (e.KeyCode == Keys.A)
+            {
+                controlCmd.moving = "left";
+            }
+            else if(e.KeyCode == Keys.D)
+            {
+                controlCmd.moving = "right";
+            }
+            else if (e.KeyCode == Keys.S)
+            {
+                controlCmd.moving = "down";
+            }
         }
 
         public void CancelMoveRequest(KeyEventArgs e)
         {
-            //throw new NotImplementedException();
+            if (e.KeyCode == Keys.W)
+            {
+                controlCmd.moving = "none";
+
+            }
+            else if (e.KeyCode == Keys.A)
+            {
+                controlCmd.moving = "none";
+            }
+            else if (e.KeyCode == Keys.D)
+            {
+                controlCmd.moving = "none";
+            }
+            else if (e.KeyCode == Keys.S)
+            {
+                controlCmd.moving = "none";
+            }
         }
 
         private void ReceiveWorld(SocketState state)
@@ -271,6 +326,12 @@ namespace GameController
             if (UpdateArrived != null)
                 UpdateArrived();
 
+            jsonString = JsonConvert.SerializeObject(controlCmd) + "\n";
+            
+            if(controlCmd.tdir != null)
+            {
+                Networking.Send(state.TheSocket, jsonString);
+            }
             Networking.GetData(state);
         }
 

@@ -157,25 +157,25 @@ namespace TankWars
             // Center the view on the middle of the world,
             // since the image and world use different coordinate systems
 
-            int viewSize = Size.Width; // view is square, so we can just use width
-            if (theWorld.GetTanks().TryGetValue(theWorld.GetPlayerId(), out Tank player))
-            {
-                double playerX = player.location.GetX();
-                double playerY = player.location.GetY();
-                e.Graphics.TranslateTransform((float)(-playerX + (viewSize / 2)), (float)(-playerY + (viewSize / 2)));
-
-                int backgroundX = -theWorld.GetWorldSize() / 2;
-                int backgroundY = -theWorld.GetWorldSize() / 2;
-                e.Graphics.DrawImage(background, new Point(backgroundX, backgroundY));
-            }
-            else
-            {
-                e.Graphics.TranslateTransform(viewSize / 2, viewSize / 2);
-            }
+            
 
             lock (theWorld)
             {
+                int viewSize = Size.Width; // view is square, so we can just use width
+                if (theWorld.GetTanks().TryGetValue(theWorld.GetPlayerId(), out Tank player))
+                {
+                    double playerX = player.location.GetX();
+                    double playerY = player.location.GetY();
+                    e.Graphics.TranslateTransform((float)(-playerX + (viewSize / 2)), (float)(-playerY + (viewSize / 2)));
 
+                    int backgroundX = -theWorld.GetWorldSize() / 2;
+                    int backgroundY = -theWorld.GetWorldSize() / 2;
+                    e.Graphics.DrawImage(background, new Point(backgroundX, backgroundY));
+                }
+                else
+                {
+                    e.Graphics.TranslateTransform(viewSize / 2, viewSize / 2);
+                }
 
                 // Draw the players
                 foreach (Tank play in theWorld.GetTanks().Values)

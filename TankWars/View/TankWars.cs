@@ -46,12 +46,13 @@ namespace View
 
             drawer.MouseDown += HandleMouseDown;
             drawer.MouseUp += HandleMouseUp;
-            drawer.MouseHover += HandleMouseHover;
+            drawer.MouseMove += HandleMouseMove;
         }
 
-        private void HandleMouseHover(object sender, EventArgs e)
+        private void HandleMouseMove(object sender, EventArgs e)
         {
-            controller.HandleMouseHover(MousePosition);
+
+            controller.HandleMouseMove(drawer.PointToClient(Cursor.Position), ViewSize);
         }
 
         /// <summary>
@@ -61,8 +62,7 @@ namespace View
         /// <param name="e"></param>
         private void HandleMouseUp(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
-                controller.CancelMouseRequest(e);
+            controller.CancelMouseRequest(e);
         }
 
         /// <summary>
@@ -83,8 +83,8 @@ namespace View
         /// <param name="e"></param>
         private void HandleKeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.W)
-                controller.CancelMoveRequest(e);
+
+            controller.CancelMoveRequest(e);
         }
 
         /// <summary>
@@ -98,8 +98,8 @@ namespace View
             //if (e.KeyCode == Keys.Escape)
             //    Application.Exit();
 
-            if (e.KeyCode == Keys.W)
-                controller.HandleMoveRequest(e);
+
+            controller.HandleMoveRequest(e);
 
             // Prevent other key handlers from running
             e.SuppressKeyPress = true;
