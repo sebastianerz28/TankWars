@@ -151,12 +151,6 @@ namespace GameController
         {
             lock (controlCmd)
             {
-
-
-                Vector2D tankLoc;
-                if (world.GetTanks().TryGetValue(id, out Tank value))
-                    tankLoc = value.location;
-
                 controlCmd.tdir = new Vector2D(mousePosition.X - (viewSize / 2.0), mousePosition.Y - (viewSize / 2.0));
                 controlCmd.tdir.Normalize();
 
@@ -291,9 +285,9 @@ namespace GameController
                     controlCmd.moving = prevKeyPress;
                     prevKeyPress = "none";
                 }
-                else if (prevKeyPress == "up")
+                else if (prevKeyPress == "down")
                 {
-                    prevKeyPress = "down";
+                    prevKeyPress = "none";
                 }
                 //keyPressed["down"] = false;
                 //controlCmd.moving = "none";
@@ -402,10 +396,10 @@ namespace GameController
             if (UpdateArrived != null)
                 UpdateArrived();
 
-            jsonString = JsonConvert.SerializeObject(controlCmd) + "\n";
 
             if (controlCmd.tdir != null)
             {
+                jsonString = JsonConvert.SerializeObject(controlCmd) + "\n";
                 Networking.Send(state.TheSocket, jsonString);
             }
             Networking.GetData(state);
