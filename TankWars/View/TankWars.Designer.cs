@@ -98,6 +98,7 @@ namespace View
             this.Controls.Add(this.IPTextBox);
             this.Name = "TankWars";
             this.Text = "Form1";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TankWars_FormClosed);
             ((System.ComponentModel.ISupportInitialize)(this.eventLog1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

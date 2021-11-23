@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using GameController;
 using GameModel;
@@ -27,7 +21,7 @@ namespace View
             world = controller.GetWorld();
             controller.ErrorOccurred += ErrorOccurredMessage;
             controller.UpdateArrived += OnFrame;
-            controller.WorldSizeArrived += InitializeDrawer;
+            controller.WorldReady += InitializeDrawer;
 
             // Set up key and mouse handlers
             this.KeyDown += HandleKeyDown;
@@ -115,7 +109,9 @@ namespace View
             // This will cause the form to redraw as soon as it can
             MethodInvoker invoker = new MethodInvoker(() => this.Invalidate(true));
             // TODO: fix this bug
-            this.Invoke(invoker);
+
+            if(!this.IsDisposed)
+                this.Invoke(invoker);
         }
 
         private void ErrorOccurredMessage(string message)
@@ -138,5 +134,10 @@ namespace View
             playerNameTextBox.Enabled = false;
         }
 
+        private void TankWars_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            //TODO: Delete me
+            //System.Threading.Thread.CurrentThread.Abort();
+        }
     }
 }

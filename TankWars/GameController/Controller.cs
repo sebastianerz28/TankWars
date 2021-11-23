@@ -17,7 +17,6 @@ namespace GameController
         private string playerName;
         public int id;
         private World world;
-        private Socket socket;
 
         //private Dictionary<string, bool> keyPressed;
         private string prevKeyPress = "none";
@@ -25,11 +24,11 @@ namespace GameController
 
         public delegate void ErrorOccuredHandler(string ErrorMessage);
         public delegate void ServerUpdateHandler();
-        public delegate void WorldSizeArrivedHandler();
+        public delegate void WorldReadyHandler();
 
         public event ServerUpdateHandler UpdateArrived;
         public event ErrorOccuredHandler ErrorOccurred;
-        public event WorldSizeArrivedHandler WorldSizeArrived;
+        public event WorldReadyHandler WorldReady;
         private string jsonString;
         private ControlCmd controlCmd = new ControlCmd();
 
@@ -58,7 +57,6 @@ namespace GameController
                 return;
             }
 
-            socket = state.TheSocket;
             state.OnNetworkAction = ReceiveStartup;
             Networking.Send(state.TheSocket, playerName + "\n");
             Networking.GetData(state);
@@ -96,7 +94,6 @@ namespace GameController
                         {
                             world.GetWalls().Add(w.id, w);
                         }
-                        Console.WriteLine("Wall ID: " + w.id + " JSON: \n" + s);
                         state.RemoveData(0, s.Length);
                         continue;
 
@@ -144,6 +141,7 @@ namespace GameController
 
                 }
             }
+            WorldReady();
             Networking.GetData(state);
         }
 
@@ -178,7 +176,7 @@ namespace GameController
             }
             else if (e.Button == MouseButtons.Right)
             {
-                controlCmd.fire = "beam";
+                controlCmd.fire = "alt";
             }
         }
 
@@ -192,8 +190,6 @@ namespace GameController
                     currentKeyPress = "up";
                     controlCmd.moving = "up";
                 }
-                //keyPressed["up"] = true;
-                //controlCmd.moving = "up";
             }
             else if (e.KeyCode == Keys.A)
             {
@@ -203,8 +199,6 @@ namespace GameController
                     currentKeyPress = "left";
                     controlCmd.moving = "left";
                 }
-                //keyPressed["left"] = true;
-                //controlCmd.moving = "left";
             }
             else if (e.KeyCode == Keys.D)
             {
@@ -214,8 +208,6 @@ namespace GameController
                     currentKeyPress = "right";
                     controlCmd.moving = "right";
                 }
-                //keyPressed["right"] = true;
-                //controlCmd.moving = "right";
             }
             else if (e.KeyCode == Keys.S)
             {
@@ -225,8 +217,6 @@ namespace GameController
                     currentKeyPress = "down";
                     controlCmd.moving = "down";
                 }
-                //keyPressed["down"] = true;
-                //controlCmd.moving = "down";
             }
         }
 
@@ -421,7 +411,6 @@ namespace GameController
                 id = int.Parse(parts[0]);
                 world.SetPlayerID(id);
                 world.SetWorldSize(int.Parse(parts[1]));
-                WorldSizeArrived();
                 state.RemoveData(0, parts[0].Length + parts[1].Length);
                 state.OnNetworkAction = ReceiveWalls;
                 Networking.GetData(state);

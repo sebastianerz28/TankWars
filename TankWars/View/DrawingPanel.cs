@@ -26,7 +26,7 @@ namespace TankWars
         private const int WallSize = 50;
         private const int TankSize = 60;
         private const int TurretSize = 50;
-        private const int ProjectileSize = 15;
+        private const int ProjectileSize = 20;
         private const int PowerupSize = 30;
 
         public DrawingPanel(World w)
@@ -83,16 +83,35 @@ namespace TankWars
 
             e.Graphics.DrawImage(TankBodies[p.ID % TankBodies.Length], new Point(-TankSize / 2, -TankSize / 2));
 
-         /*   e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
-            {
-                // Rectangles are drawn starting from the top-left corner.
-                // So if we want the rectangle centered on the player's location, we have to offset it
-                // by half its size to the left (-width/2) and up (-height/2)
-                Rectangle r = new Rectangle(-(60 / 2), -(60 / 2), 60, 60);
-                e.Graphics.FillRectangle(redBrush, r);
-            }*/
+            /*   e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+               using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
+               {
+                   // Rectangles are drawn starting from the top-left corner.
+                   // So if we want the rectangle centered on the player's location, we have to offset it
+                   // by half its size to the left (-width/2) and up (-height/2)
+                   Rectangle r = new Rectangle(-(60 / 2), -(60 / 2), 60, 60);
+                   e.Graphics.FillRectangle(redBrush, r);
+               }*/
         }
+
+        private void NameDrawer(object o, PaintEventArgs e)
+        {
+            Tank t = o as Tank;
+
+            StringBuilder nameAndScore = new StringBuilder();
+            nameAndScore.Append(t.name);
+            nameAndScore.Append(": ");
+            nameAndScore.Append(t.score);
+
+            using (SolidBrush whiteBrush = new SolidBrush(Color.White))
+            {
+                StringFormat format = new StringFormat();
+                format.Alignment = StringAlignment.Center;
+
+                e.Graphics.DrawString(nameAndScore.ToString(), DefaultFont, whiteBrush, new Point(0, TankSize/2), format);
+            }
+        }
+
 
         private void TurretDrawer(object o, PaintEventArgs e)
         {
@@ -112,31 +131,11 @@ namespace TankWars
         {
             Powerup p = o as Powerup;
             e.Graphics.DrawImage(PowerUpImage, new Point(-PowerupSize / 2, -PowerupSize / 2));
-            /*int width = 8;
-            int height = 8;
-            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            e.Graphics.DrawImage(PowerUpImage, new Point(-PowerupSize / 2, -PowerupSize / 2));
-            using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
-            {
-                Rectangle r = new Rectangle(-(PowerupSize / 2), -(PowerupSize / 2), PowerupSize, PowerupSize);
-
-                e.Graphics.FillEllipse(redBrush, r);
-
-            }*/
-
-
         }
 
         private void WallDrawer(object o, PaintEventArgs e)
         {
-            e.Graphics.DrawImage(wallImage, new Point(-WallSize/2, -WallSize/2));
-            //e.Graphics.DrawImage(wallImage, new Rectangle(-(WallSize / 2), -(WallSize / 2), WallSize, WallSize));
-
-            //using (System.Drawing.TextureBrush wallBrush = new System.Drawing.TextureBrush(wallImage))
-            //{
-            //    Rectangle r = new Rectangle(-(WallSize / 2), -(WallSize / 2), WallSize, WallSize);
-            //    e.Graphics.FillRectangle(wallBrush, r);
-            //}
+            e.Graphics.DrawImage(wallImage, new Point(-WallSize / 2, -WallSize / 2));
         }
 
         private void ProjectileDrawer(object o, PaintEventArgs e)
@@ -154,7 +153,14 @@ namespace TankWars
             }
         }
 
+        private void BeamDrawer(object o, PaintEventArgs e)
+        {
 
+            using (System.Drawing.SolidBrush goldBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Gold))
+            {
+                e.Graphics.FillRectangle(goldBrush, new Rectangle(-(TankSize / 2), -(TankSize / 2), 60, 100000));
+            }
+        }
 
         // This method is invoked when the DrawingPanel needs to be re-drawn
         protected override void OnPaint(PaintEventArgs e)
@@ -162,7 +168,7 @@ namespace TankWars
             // Center the view on the middle of the world,
             // since the image and world use different coordinate systems
 
-            
+
 
             lock (theWorld)
             {
@@ -185,12 +191,13 @@ namespace TankWars
                 // Draw the players
                 foreach (Tank play in theWorld.GetTanks().Values)
                 {
-                    if(play.hp > 0)
+                    if (play.hp > 0)
                     {
                         DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.orientation.ToAngle(), PlayerDrawer);
                         DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.aiming.ToAngle(), TurretDrawer);
+                        DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY() + 5, 0, NameDrawer);
                     }
-                        
+
                     if (play.died || play.hp == 0)
                     {
                         DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), 0, ExplosionDrawer);
@@ -201,7 +208,7 @@ namespace TankWars
                 // Draw the powerups
                 foreach (Powerup pow in theWorld.GetPowerups().Values)
                 {
-                    if(!pow.died)
+                    if (!pow.died)
                         DrawObjectWithTransform(e, pow, pow.loc.GetX(), pow.loc.GetY(), 0, PowerupDrawer);
                 }
 
@@ -211,14 +218,14 @@ namespace TankWars
                     int distY = (int)((wall.p1.GetY() - wall.p2.GetY()) / WallSize);
                     int p2X = (int)wall.p2.GetX();
                     int p2Y = (int)wall.p2.GetY();
-                    
+
                     for (int i = 0; i <= Math.Abs(distX == 0 ? distY : distX); i++)
                     {
-                        
+
                         DrawObjectWithTransform(e, wall, p2X, p2Y, 0, WallDrawer);
                         if (distX != 0)
                         {
-                            if(distX < 0)
+                            if (distX < 0)
                             {
                                 p2X -= WallSize;
                             }
@@ -226,11 +233,11 @@ namespace TankWars
                             {
                                 p2X += WallSize;
                             }
-                            
+
                         }
                         else
                         {
-                            if(distY < 0)
+                            if (distY < 0)
                             {
                                 p2Y -= WallSize;
                             }
@@ -238,21 +245,21 @@ namespace TankWars
                             {
                                 p2Y += WallSize;
                             }
-                            
+
                         }
                     }
 
                 }
 
-                foreach(Projectile p in theWorld.GetProjectiles().Values)
+                foreach (Projectile p in theWorld.GetProjectiles().Values)
                 {
-                    if(!p.died)
+                    if (!p.died)
                         DrawObjectWithTransform(e, p, p.loc.GetX(), p.loc.GetY(), p.dir.ToAngle(), ProjectileDrawer);
                 }
 
-                
 
-                
+
+
 
                 // Do anything that Panel (from which we inherit) needs to do
                 base.OnPaint(e);
@@ -263,25 +270,25 @@ namespace TankWars
         private void LoadTanks()
         {
             TankBodies[0] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\BlueTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[0] =  new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\BlueTurret.png"), new Size(TurretSize, TurretSize));
+            TankTurrets[0] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\BlueTurret.png"), new Size(TurretSize, TurretSize));
 
             TankBodies[1] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\DarkTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[1] =  new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\DarkTurret.png"), new Size(TurretSize, TurretSize));
-                      
+            TankTurrets[1] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\DarkTurret.png"), new Size(TurretSize, TurretSize));
+
             TankBodies[2] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\GreenTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[2] =  new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\GreenTurret.png"), new Size(TurretSize, TurretSize));
-                      
+            TankTurrets[2] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\GreenTurret.png"), new Size(TurretSize, TurretSize));
+
             TankBodies[3] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\LightGreenTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[3] =  new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\LightGreenTurret.png"), new Size(TurretSize, TurretSize));
-                      
+            TankTurrets[3] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\LightGreenTurret.png"), new Size(TurretSize, TurretSize));
+
             TankBodies[4] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\OrangeTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[4] =  new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\OrangeTurret.png"), new Size(TurretSize, TurretSize));
+            TankTurrets[4] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\OrangeTurret.png"), new Size(TurretSize, TurretSize));
 
             TankBodies[5] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\PurpleTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[5] =  new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\PurpleTurret.png"), new Size(TurretSize, TurretSize));
+            TankTurrets[5] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\PurpleTurret.png"), new Size(TurretSize, TurretSize));
 
             TankBodies[6] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\RedTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[6] =  new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\RedTurret.png"), new Size(TurretSize, TurretSize));
+            TankTurrets[6] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\RedTurret.png"), new Size(TurretSize, TurretSize));
 
             TankBodies[7] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\YellowTank.png"), new Size(TankSize, TankSize));
             TankTurrets[7] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\YellowTurret.png"), new Size(TurretSize, TurretSize));
@@ -294,7 +301,7 @@ namespace TankWars
             Projectiles[5] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-violet.png"), new Size(ProjectileSize, ProjectileSize));
             Projectiles[6] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-white.png"), new Size(ProjectileSize, ProjectileSize));
             Projectiles[7] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-yellow.png"), new Size(ProjectileSize, ProjectileSize));
-            
+
 
         }
 
