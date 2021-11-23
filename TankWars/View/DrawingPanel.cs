@@ -17,6 +17,7 @@ namespace TankWars
         private World theWorld;
         private Image background;
         private Image wallImage;
+        private Image PowerUpImage;
 
         private Image[] TankBodies;
         private Image[] TankTurrets;
@@ -25,8 +26,8 @@ namespace TankWars
         private const int WallSize = 50;
         private const int TankSize = 60;
         private const int TurretSize = 50;
-        private const int ProjectileSize = 30;
-        private const int PowerupSize = 10;
+        private const int ProjectileSize = 15;
+        private const int PowerupSize = 30;
 
         public DrawingPanel(World w)
         {
@@ -34,6 +35,7 @@ namespace TankWars
             theWorld = w;
             background = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\Background.png"), new Size(theWorld.GetWorldSize(), theWorld.GetWorldSize()));
             wallImage = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\WallSprite.png"), new Size(WallSize, WallSize));
+            PowerUpImage = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\ChugJug.png"), new Size(PowerupSize, PowerupSize));
             TankBodies = new Image[8];
             TankTurrets = new Image[8];
             Projectiles = new Image[8];
@@ -109,17 +111,18 @@ namespace TankWars
         private void PowerupDrawer(object o, PaintEventArgs e)
         {
             Powerup p = o as Powerup;
-
-            int width = 8;
+            e.Graphics.DrawImage(PowerUpImage, new Point(-PowerupSize / 2, -PowerupSize / 2));
+            /*int width = 8;
             int height = 8;
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            e.Graphics.DrawImage(PowerUpImage, new Point(-PowerupSize / 2, -PowerupSize / 2));
             using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
             {
                 Rectangle r = new Rectangle(-(PowerupSize / 2), -(PowerupSize / 2), PowerupSize, PowerupSize);
 
                 e.Graphics.FillEllipse(redBrush, r);
 
-            }
+            }*/
 
 
         }
