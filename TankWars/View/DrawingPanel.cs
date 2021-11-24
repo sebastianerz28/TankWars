@@ -226,6 +226,16 @@ namespace TankWars
             }
             ;
         }
+        private void SupportBeamDrawer(object o, PaintEventArgs e)
+        {
+            Beam b = o as Beam;
+            using (SolidBrush rainbowBrush = new SolidBrush(ChooseColor(BeamCounter[b.id])))
+            {
+
+                e.Graphics.FillRectangle(rainbowBrush, new Rectangle(0, 0, 2, 60 - BeamCounter[b.id]));
+            }
+            ;
+        }
 
         // This method is invoked when the DrawingPanel needs to be re-drawn
         protected override void OnPaint(PaintEventArgs e)
@@ -337,10 +347,17 @@ namespace TankWars
 
                     /* b.org.Normalize();
                      b.dir.Normalize();*/
-                    if (BeamCounter[b.id] <= 35)
+                    if (BeamCounter[b.id] <= 60)
                     {
 
                         DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), b.dir.ToAngle() - 180, BeamDrawer);
+                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), (b.dir.ToAngle() - 180) + 30, SupportBeamDrawer);
+                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), (b.dir.ToAngle() - 180) - 30, SupportBeamDrawer);
+                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), (b.dir.ToAngle() - 180) + 20, SupportBeamDrawer);
+                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), (b.dir.ToAngle() - 180) - 20, SupportBeamDrawer);
+                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), (b.dir.ToAngle() - 180) + 10, SupportBeamDrawer);
+                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), (b.dir.ToAngle() - 180) - 10, SupportBeamDrawer);
+
                     }
 
 
@@ -358,20 +375,18 @@ namespace TankWars
 
         private Color ChooseColor(int counter)
         {
-            if (counter < 5)
+            if (counter < 10)
                 return Colors[0];
-            else if (counter < 10)
+            else if (counter < 20)
                 return Colors[1];
-            else if (counter < 15)
+            else if (counter < 30)
                 return Colors[2];
-            else if (counter < 20)
+            else if (counter < 40)
                 return Colors[3];
-            else if (counter < 25)
+            else if (counter < 50)
                 return Colors[4];
-            else if (counter < 20)
-                return Colors[5];
             else
-                return Colors[1];
+                return Colors[5];
         }
         public Dictionary<int, int> GetExplosionCounter()
         {
