@@ -48,7 +48,7 @@ namespace TankWars
             TankBodies = new Image[8];
             TankTurrets = new Image[8];
             Projectiles = new Image[8];
-            Explosion = new Image[8];
+            Explosion = new Image[33];
             LoadTanks();
             
         }
@@ -200,7 +200,7 @@ namespace TankWars
         private void ExplosionDrawer(object o, PaintEventArgs e)
         {
             Tank t = o as Tank;
-            e.Graphics.DrawImage(Explosion[theWorld.GetExplosionCounter()[t.ID]++], new Point(-TankSize / 2, -TankSize / 2));
+            e.Graphics.DrawImage(Explosion[theWorld.GetExplosionCounter()[t.ID]++ % 15], new Point(-TankSize / 2, -TankSize / 2));
             
         }
 
@@ -211,7 +211,8 @@ namespace TankWars
 
             using (SolidBrush goldBrush = new SolidBrush(Color.Gold))
             {
-                e.Graphics.FillRectangle(goldBrush, new Rectangle(-(TankSize / 2), -(TankSize / 2), 60, 100000));
+                
+                e.Graphics.FillRectangle(goldBrush, new Rectangle(0, 0, 5, 100000));
             }
         }
 
@@ -250,15 +251,15 @@ namespace TankWars
                     {
                         if(theWorld.GetExplosionCounter().ContainsKey(play.ID))
                         {
-                            if (theWorld.GetExplosionCounter()[play.ID] == 7)
+                            /*if (play.died)
                             {
                                 theWorld.GetExplosionCounter()[play.ID] = 0;
                             }
 
-                            if (theWorld.GetExplosionCounter()[play.ID] !=  7)
-                            {
+                            if (theWorld.GetExplosionCounter()[play.ID] !=  16)
+                            {*/
                                 DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), 0, ExplosionDrawer);
-                            }
+                            //}
                         }
                        
                         
@@ -317,6 +318,17 @@ namespace TankWars
                     if (!p.died)
                         DrawObjectWithTransform(e, p, p.loc.GetX(), p.loc.GetY(), p.dir.ToAngle(), ProjectileDrawer);
                 }
+                foreach (Beam b in theWorld.GetBeams().Values)
+                {
+
+                   /* b.org.Normalize();
+                    b.dir.Normalize();*/
+                    DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), Vector2D.AngleBetweenPoints(b.org,b.dir), BeamDrawer);
+                }
+                
+
+
+
 
                 // Do anything that Panel (from which we inherit) needs to do
                 base.OnPaint(e);
@@ -361,8 +373,14 @@ namespace TankWars
             Projectiles[7] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-yellow.png"), new Size(ProjectileSize, ProjectileSize));
 
 
-            for (int i = 0; i < Explosion.Length; i++)
-                Explosion[i] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\explosion_" + i + ".png"), new Size(TankSize, TankSize));
+            for (int i = 0; i < Explosion.Length; i+= 3)
+            {
+                Console.WriteLine(i);
+                Explosion[i] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\explosion_" + i%8 + ".png"), new Size(TankSize, TankSize));
+                Explosion[i+1] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\explosion_" + i%8 + ".png"), new Size(TankSize, TankSize));
+                Explosion[i + 2] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\explosion_" + i % 8 + ".png"), new Size(TankSize, TankSize));
+            }
+                
         }
 
 
