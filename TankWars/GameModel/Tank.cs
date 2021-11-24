@@ -40,6 +40,8 @@ namespace GameModel
         [JsonProperty(PropertyName = "join")]
         public bool joined { get; private set; }
 
+        
+
         public Tank()
         {
             aiming = new Vector2D(0,-1);

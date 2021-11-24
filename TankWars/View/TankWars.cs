@@ -14,6 +14,8 @@ namespace View
         private World world;
         private const int MenuSize = 60;
         private const int ViewSize = 900;
+        private delegate void FrameEvent();
+
         public TankWars()
         {
             InitializeComponent();
@@ -32,7 +34,7 @@ namespace View
         {
             // TODO: Lock world at this point?
             // Place and add the drawing panel
-            drawer = new DrawingPanel(world);
+            drawer = new DrawingPanel(world, OnFrame);
             drawer.Location = new Point(0, MenuSize);
             drawer.Size = new Size(ViewSize, ViewSize);
             MethodInvoker invoker = new MethodInvoker(() => this.Controls.Add(drawer));
@@ -105,6 +107,7 @@ namespace View
         /// </summary>
         private void OnFrame()
         {
+
             // Invalidate this form and all its children
             // This will cause the form to redraw as soon as it can
 
@@ -148,8 +151,15 @@ namespace View
 
         private void TankWars_FormClosing(object sender, FormClosingEventArgs e)
         {
+            try
+            {
+                Environment.Exit(0);
+            }
+            catch
+            {
 
-            Environment.Exit(0);
+            }
+            
             /*MethodInvoker invoker = new MethodInvoker(() => { });
             this.Invoke(invoker);*/
         }

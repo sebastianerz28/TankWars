@@ -299,15 +299,19 @@ namespace GameController
                             if (tank.disconnected)
                             {
                                 world.GetTanks().Remove(tank.ID);
+                                world.GetExplosionCounter().Remove(tank.ID);
                             }
                             else
                             {
+
                                 world.GetTanks()[tank.ID] = tank;
+                                
                             }
 
                         }
                         else
                         {
+                            world.GetExplosionCounter().Add(tank.ID, 0);
                             world.GetTanks().Add(tank.ID, tank);
                         }
                         state.RemoveData(0, s.Length);
