@@ -23,7 +23,10 @@ namespace GameController
         public delegate void WorldReadyHandler();
         public delegate void SetExplosionCountHandler(int ID);
         public delegate void RemoveTankExplosionCountHandler(int ID);
+        public delegate void SetBeamCounterHandler(int id);
 
+
+        public event SetBeamCounterHandler SetBeamCounter;
         public event RemoveTankExplosionCountHandler RemoveTankExplosionCount;
         public event SetExplosionCountHandler SetExplosionCounter;
         public event ServerUpdateHandler UpdateArrived;
@@ -303,7 +306,8 @@ namespace GameController
                             if (tank.disconnected)
                             {
                                 world.GetTanks().Remove(tank.ID);
-                                RemoveTankExplosionCount(tank.ID);                            }
+                                RemoveTankExplosionCount(tank.ID);
+                            }
                             else
                             {
                                 world.GetTanks()[tank.ID] = tank;
@@ -343,13 +347,16 @@ namespace GameController
                     token = obj["beam"];
                     if (token != null)
                     {
+                        
                         Beam beam = JsonConvert.DeserializeObject<Beam>(s);
                         if (world.GetBeams().ContainsKey(beam.id))
                         {
                             world.GetBeams()[beam.id] = beam;
+                            SetBeamCounter(beam.id);
                         }
                         else
                         {
+                            SetBeamCounter(beam.id);
                             world.GetBeams().Add(beam.id, beam);
                         }
                         state.RemoveData(0, s.Length);
@@ -405,12 +412,26 @@ namespace GameController
             }
             else
             {
-                //TODO: handle case when id and worldsize cannot be parsed
                 lock (world)
                 {
-                    id = int.Parse(parts[0]);
-                    world.SetPlayerID(id);
-                    world.SetWorldSize(int.Parse(parts[1]));
+                    if(int.TryParse(parts[0], out id))
+                    {
+                        world.SetPlayerID(id);
+                    }
+                    else
+                    {
+                        ErrorOccurred("Id could not be parsed");
+                        return;
+                    }
+                    if(int.TryParse(parts[1], out int worldSize))
+                    {
+                        world.SetWorldSize(worldSize);
+                    }
+                    else
+                    {
+                        ErrorOccurred("World Size could not be parsed");
+                        return;
+                    }
                 }
 
                 state.RemoveData(0, parts[0].Length + parts[1].Length);
@@ -418,42 +439,11 @@ namespace GameController
                 Networking.GetData(state);
 
             }
-
-            //foreach (string p in parts)
-            //{
-            //    // Ignore empty strings added by the regex splitter
-            //    if (p.Length == 0)
-            //        continue;
-
-            //    if (int.TryParse(p, out int val))
-            //    {
-            //        if (!idInitialized)
-            //        {
-            //            id = val;
-            //        }
-            //        else if (!worldSizeInitialized)
-            //        {
-            //            worldSize = val;
-            //        }
-            //    }
-            //    else
-            //    {
-            //        Networking.GetData(state);
-            //        return;1
-            //    }
-
-            //// Then remove it from the SocketState's growable buffer
-            //state.RemoveData(0, p.Length);
-            //}
-
         }
         public World GetWorld()
         {
             return world;
         }
-
-
-
     }
 
 }

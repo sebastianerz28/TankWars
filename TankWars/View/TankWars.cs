@@ -30,12 +30,19 @@ namespace View
             this.KeyUp += HandleKeyUp;
 
         }
-
+        /// <summary>
+        /// Removes explosion id and frame counter from dictionary if tank disconnects.
+        /// </summary>
+        /// <param name="ID"></param>
         private void RemoveTankExplosionCount(int ID)
         {
             drawer.GetExplosionCounter().Remove(ID);
         }
-
+        /// <summary>
+        /// Sets explosion counter with id of tank and sets frame counter to 0
+        /// Triggered when tank dies
+        /// </summary>
+        /// <param name="ID"></param>
         private void SetExplosionCounter(int ID)
         {
             if(drawer.GetExplosionCounter().TryGetValue(ID, out int counter)){
@@ -45,12 +52,14 @@ namespace View
                 drawer.GetExplosionCounter().Add(ID, 0);
             }
         }
-
+        /// <summary>
+        /// Initializes drawer passing in the work and setting up event handlers
+        /// </summary>
         private void InitializeDrawer()
         {
             // TODO: Lock world at this point?
             // Place and add the drawing panel
-            drawer = new DrawingPanel(world, OnFrame);
+            drawer = new DrawingPanel(world);
             drawer.Location = new Point(0, MenuSize);
             drawer.Size = new Size(ViewSize, ViewSize);
             MethodInvoker invoker = new MethodInvoker(() => this.Controls.Add(drawer));
@@ -62,8 +71,29 @@ namespace View
 
             controller.RemoveTankExplosionCount += RemoveTankExplosionCount;
             controller.SetExplosionCounter += SetExplosionCounter;
+            controller.SetBeamCounter += SetBeamCounter;
         }
-
+        /// <summary>
+        /// Sets the beam counter with an id and setting the frame counter to 0
+        /// </summary>
+        /// <param name="id"></param>
+        private void SetBeamCounter(int id)
+        {
+            if(drawer.GetBeamCounter().TryGetValue(id, out int counter))
+            {
+                counter = 0;
+            }
+            else
+            {
+                drawer.GetBeamCounter().Add(id, 0);
+            }
+           
+        }
+        /// <summary>
+        /// Handle mouse moving in the panel
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void HandleMouseMove(object sender, EventArgs e)
         {
 
@@ -109,9 +139,9 @@ namespace View
         /// <param name="e"></param>
         private void HandleKeyDown(object sender, KeyEventArgs e)
         {
-            // TODO: added feature
-            //if (e.KeyCode == Keys.Escape)
-            //    Application.Exit();
+            
+            if (e.KeyCode == Keys.Escape)
+                TankWars_FormClosing(sender, new FormClosingEventArgs(CloseReason.ApplicationExitCall, true));
 
 
             controller.HandleMoveRequest(e);
@@ -131,13 +161,16 @@ namespace View
             // This will cause the form to redraw as soon as it can
 
             MethodInvoker invoker = new MethodInvoker(() => this.Invalidate(true));
-            // TODO: fix this bug
-            //if(this.Controls.Contains(drawer))
+            
             this.Invoke(invoker);
             
 
         }
-
+        /// <summary>
+        /// If an error occurs during any point of executiong diplays appropiate message
+        /// and allows the user to reconnect if desired
+        /// </summary>
+        /// <param name="message"></param>
         private void ErrorOccurredMessage(string message)
         {
             MethodInvoker invoker = new MethodInvoker(() =>
@@ -149,6 +182,13 @@ namespace View
             });
             this.Invoke(invoker);
         }
+
+        /// <summary>
+        /// Event to handle connect button
+        /// Will not allow a blank or missing ip/name
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void connectButton_Click(object sender, EventArgs e)
         {
             if (IPTextBox.Text == "" || playerNameTextBox.Text == "")
@@ -162,12 +202,12 @@ namespace View
             controller.Connect(IPTextBox.Text, playerNameTextBox.Text);
         }
 
-        private void TankWars_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            //TODO: Delete me
-            //System.Threading.Thread.CurrentThread.Abort();
-        }
-
+        
+        /// <summary>
+        /// Closes form with exit code 0 upon hitting Red X for graceful exit
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TankWars_FormClosing(object sender, FormClosingEventArgs e)
         {
             try
@@ -178,9 +218,6 @@ namespace View
             {
 
             }
-            
-            /*MethodInvoker invoker = new MethodInvoker(() => { });
-            this.Invoke(invoker);*/
         }
     }
 }

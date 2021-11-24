@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
 using GameModel;
 using static GameController.Controller;
 
@@ -24,7 +26,7 @@ namespace TankWars
         private Image[] TankTurrets;
         private Image[] Projectiles;
         private Image[] Explosion;
-        
+        private Color[] Colors;
 
         private const int WallSize = 50;
         private const int TankSize = 60;
@@ -32,24 +34,31 @@ namespace TankWars
         private const int ProjectileSize = 20;
         private const int PowerupSize = 30;
 
-        private Dictionary<int, int> explosionCounter; 
+        private Dictionary<int, int> explosionCounter;
+        private Dictionary<int, int> BeamCounter;
+        private ArrayList toRemove;
 
-        public DrawingPanel(World w, Action a)
+
+        public DrawingPanel(World w)
         {
-           
-            
+
+            toRemove = new ArrayList();
             DoubleBuffered = true;
             theWorld = w;
             background = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\Background.png"), new Size(theWorld.GetWorldSize(), theWorld.GetWorldSize()));
             wallImage = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\WallSprite.png"), new Size(WallSize, WallSize));
             PowerUpImage = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\ChugJug.png"), new Size(PowerupSize, PowerupSize));
             explosionCounter = new Dictionary<int, int>();
+            BeamCounter = new Dictionary<int, int>();
 
             TankBodies = new Image[8];
             TankTurrets = new Image[8];
             Projectiles = new Image[8];
             Explosion = new Image[38];
+            Colors = new Color[6];
+
             LoadTanks();
+            FillColors();
             
         }
 
@@ -208,12 +217,13 @@ namespace TankWars
 
         private void BeamDrawer(object o, PaintEventArgs e)
         {
-
-            using (SolidBrush goldBrush = new SolidBrush(Color.Gold))
+            Beam b = o as Beam;
+            using (SolidBrush rainbowBrush = new SolidBrush(ChooseColor(BeamCounter[b.id]++)))
             {
                 
-                e.Graphics.FillRectangle(goldBrush, new Rectangle(0, 0, 5, 100000));
+                e.Graphics.FillRectangle(rainbowBrush, new Rectangle(0, 0, 2, theWorld.GetWorldSize()));
             }
+            ;
         }
 
         // This method is invoked when the DrawingPanel needs to be re-drawn
@@ -317,15 +327,25 @@ namespace TankWars
                 {
                     if (!p.died)
                         DrawObjectWithTransform(e, p, p.loc.GetX(), p.loc.GetY(), p.dir.ToAngle(), ProjectileDrawer);
+                    else 
+                    {
+                        toRemove.Add(p.id);
+                    }
                 }
+                
                 foreach (Beam b in theWorld.GetBeams().Values)
                 {
 
                    /* b.org.Normalize();
                     b.dir.Normalize();*/
-                    DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), Vector2D.AngleBetweenPoints(b.org,b.dir), BeamDrawer);
+                   if(BeamCounter[b.id] <= 35)
+                    {
+                        
+                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), b.dir.ToAngle() -180, BeamDrawer);
+                    }
+                   
+                    
                 }
-                
 
 
 
@@ -337,9 +357,31 @@ namespace TankWars
 
         }
 
+        private Color ChooseColor(int counter)
+        {
+            if (counter < 5)
+                return Colors[0];
+            else if (counter < 10)
+                return Colors[1];
+            else if (counter < 15)
+                return Colors[2];
+            else if (counter < 20)
+                return Colors[3];
+            else if (counter < 25)
+                return Colors[4];
+            else if (counter < 20)
+                return Colors[5];
+            else
+                return Colors[1];
+        }
         public Dictionary<int, int> GetExplosionCounter()
         {
+
             return explosionCounter;
+        }
+        public Dictionary<int, int> GetBeamCounter()
+        {
+            return BeamCounter;
         }
 
         private void LoadTanks()
@@ -383,6 +425,15 @@ namespace TankWars
                 Explosion[i] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\frame_" + i + "_delay-0.03s.png"), new Size(TankSize, TankSize));
             }
                 
+        }
+        private void FillColors()
+        {
+            Colors[0] = Color.Red;
+            Colors[1] = Color.Orange;
+            Colors[2] = Color.Yellow;
+            Colors[3] = Color.Green;
+            Colors[4] = Color.Blue;
+            Colors[5] = Color.Purple;
         }
 
 
