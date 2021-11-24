@@ -20,7 +20,7 @@ namespace TankWars
         private Image background;
         private Image wallImage;
         private Image PowerUpImage;
-        
+
 
         private Image[] TankBodies;
         private Image[] TankTurrets;
@@ -36,13 +36,13 @@ namespace TankWars
 
         private Dictionary<int, int> explosionCounter;
         private Dictionary<int, int> BeamCounter;
-        
+
 
 
         public DrawingPanel(World w)
         {
 
-            
+
             DoubleBuffered = true;
             theWorld = w;
             background = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\Background.png"), new Size(theWorld.GetWorldSize(), theWorld.GetWorldSize()));
@@ -59,7 +59,7 @@ namespace TankWars
 
             LoadTanks();
             FillColors();
-            
+
         }
 
 
@@ -124,7 +124,8 @@ namespace TankWars
             nameAndScore.Append(t.score);
 
             using (SolidBrush whiteBrush = new SolidBrush(Color.White))
-            using (Font bigFont = new Font(SystemFonts.DefaultFont.FontFamily, 14, FontStyle.Regular)) {
+            using (Font bigFont = new Font(SystemFonts.DefaultFont.FontFamily, 14, FontStyle.Regular))
+            {
                 StringFormat format = new StringFormat();
                 format.Alignment = StringAlignment.Center;
                 e.Graphics.DrawString(nameAndScore.ToString(), bigFont, whiteBrush, new Point(0, TankSize / 2), format);
@@ -143,7 +144,7 @@ namespace TankWars
             Rectangle leftRectangle = new Rectangle(-TankSize / 2, -TankSize / 2, leftSize, 8);
             Rectangle rightRectangle = new Rectangle((-TankSize / 2) + leftSize, -TankSize / 2, rightSize, 8);
 
-            
+
 
             if (tankHealth == 3)
             {
@@ -210,7 +211,7 @@ namespace TankWars
         {
             Tank t = o as Tank;
             e.Graphics.DrawImage(Explosion[explosionCounter[t.ID]++ % (Explosion.Length - 1)], new Point(-TankSize / 2, -TankSize / 2));
-            
+
         }
 
 
@@ -220,7 +221,7 @@ namespace TankWars
             Beam b = o as Beam;
             using (SolidBrush rainbowBrush = new SolidBrush(ChooseColor(BeamCounter[b.id]++)))
             {
-                
+
                 e.Graphics.FillRectangle(rainbowBrush, new Rectangle(0, 0, 2, theWorld.GetWorldSize()));
             }
             ;
@@ -250,16 +251,16 @@ namespace TankWars
                 {
                     if (play.hp > 0)
                     {
-                        
+
                         DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.orientation.ToAngle(), PlayerDrawer);
                         DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.aiming.ToAngle(), TurretDrawer);
                         DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY() + 5, 0, NameDrawer);
                         DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY() - 10, 0, HealthbarDrawer);
                     }
 
-                   else if (play.died || play.hp == 0)
+                    else if (play.died || play.hp == 0)
                     {
-                        if(explosionCounter.ContainsKey(play.ID))
+                        if (explosionCounter.ContainsKey(play.ID))
                         {
                             /*if (play.died)
                             {
@@ -268,11 +269,11 @@ namespace TankWars
 
                             if (theWorld.GetExplosionCounter()[play.ID] !=  16)
                             {*/
-                                DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), 0, ExplosionDrawer);
+                            DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), 0, ExplosionDrawer);
                             //}
                         }
-                       
-                        
+
+
                     }
 
                 }
@@ -280,8 +281,8 @@ namespace TankWars
                 // Draw the powerups
                 foreach (Powerup pow in theWorld.GetPowerups().Values)
                 {
-                    if (!pow.died)
-                        DrawObjectWithTransform(e, pow, pow.loc.GetX(), pow.loc.GetY(), 0, PowerupDrawer);
+
+                    DrawObjectWithTransform(e, pow, pow.loc.GetX(), pow.loc.GetY(), 0, PowerupDrawer);
                 }
 
                 foreach (Wall wall in theWorld.GetWalls().Values)
@@ -325,24 +326,24 @@ namespace TankWars
 
                 foreach (Projectile p in theWorld.GetProjectiles().Values)
                 {
-                    
+
                     DrawObjectWithTransform(e, p, p.loc.GetX(), p.loc.GetY(), p.dir.ToAngle(), ProjectileDrawer);
-                    
+
                 }
 
-                
+
                 foreach (Beam b in theWorld.GetBeams().Values)
                 {
 
-                   /* b.org.Normalize();
-                    b.dir.Normalize();*/
-                   if(BeamCounter[b.id] <= 35)
+                    /* b.org.Normalize();
+                     b.dir.Normalize();*/
+                    if (BeamCounter[b.id] <= 35)
                     {
-                        
-                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), b.dir.ToAngle() -180, BeamDrawer);
+
+                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), b.dir.ToAngle() - 180, BeamDrawer);
                     }
-                   
-                    
+
+
                 }
 
 
@@ -422,7 +423,7 @@ namespace TankWars
             {
                 Explosion[i] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\frame_" + i + "_delay-0.03s.png"), new Size(TankSize, TankSize));
             }
-                
+
         }
         private void FillColors()
         {

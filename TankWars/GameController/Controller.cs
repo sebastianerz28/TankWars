@@ -379,7 +379,11 @@ namespace GameController
                             {
                                 world.GetPowerups().Remove(powerup.id);
                             }
-                            world.GetPowerups()[powerup.id] = powerup;
+                            else
+                            {
+                                world.GetPowerups()[powerup.id] = powerup;
+                            }
+                            
                         }
                         else
                         {
