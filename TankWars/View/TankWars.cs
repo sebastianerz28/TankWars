@@ -24,10 +24,26 @@ namespace View
             controller.UpdateArrived += OnFrame;
             controller.WorldReady += InitializeDrawer;
 
+
             // Set up key and mouse handlers
             this.KeyDown += HandleKeyDown;
             this.KeyUp += HandleKeyUp;
 
+        }
+
+        private void RemoveTankExplosionCount(int ID)
+        {
+            drawer.GetExplosionCounter().Remove(ID);
+        }
+
+        private void SetExplosionCounter(int ID)
+        {
+            if(drawer.GetExplosionCounter().TryGetValue(ID, out int counter)){
+                counter = 0;
+            } else
+            {
+                drawer.GetExplosionCounter().Add(ID, 0);
+            }
         }
 
         private void InitializeDrawer()
@@ -43,6 +59,9 @@ namespace View
             drawer.MouseDown += HandleMouseDown;
             drawer.MouseUp += HandleMouseUp;
             drawer.MouseMove += HandleMouseMove;
+
+            controller.RemoveTankExplosionCount += RemoveTankExplosionCount;
+            controller.SetExplosionCounter += SetExplosionCounter;
         }
 
         private void HandleMouseMove(object sender, EventArgs e)

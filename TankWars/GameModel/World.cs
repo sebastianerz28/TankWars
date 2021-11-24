@@ -9,15 +9,8 @@ namespace GameModel
         private Dictionary<int, Projectile> projectiles = new Dictionary<int, Projectile>();
         private Dictionary<int, Beam> beams = new Dictionary<int, Beam>();
         private Dictionary<int, Powerup> powerups = new Dictionary<int, Powerup>();
-        private Dictionary<int, int> explosionCounter = new Dictionary<int, int>();
         private int PlayerId;
         private int WorldSize;
-
-        public Dictionary<int, int> GetExplosionCounter()
-        {
-
-            return explosionCounter;
-        }
 
         public Dictionary<int, Wall> GetWalls()
         {

@@ -32,7 +32,7 @@ namespace TankWars
         private const int ProjectileSize = 20;
         private const int PowerupSize = 30;
 
-        private Dictionary<int, int> explosionIndex; 
+        private Dictionary<int, int> explosionCounter; 
 
         public DrawingPanel(World w, Action a)
         {
@@ -43,12 +43,12 @@ namespace TankWars
             background = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\Background.png"), new Size(theWorld.GetWorldSize(), theWorld.GetWorldSize()));
             wallImage = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\WallSprite.png"), new Size(WallSize, WallSize));
             PowerUpImage = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\ChugJug.png"), new Size(PowerupSize, PowerupSize));
-            explosionIndex = new Dictionary<int, int>();
+            explosionCounter = new Dictionary<int, int>();
 
             TankBodies = new Image[8];
             TankTurrets = new Image[8];
             Projectiles = new Image[8];
-            Explosion = new Image[33];
+            Explosion = new Image[38];
             LoadTanks();
             
         }
@@ -200,7 +200,7 @@ namespace TankWars
         private void ExplosionDrawer(object o, PaintEventArgs e)
         {
             Tank t = o as Tank;
-            e.Graphics.DrawImage(Explosion[theWorld.GetExplosionCounter()[t.ID]++ % 15], new Point(-TankSize / 2, -TankSize / 2));
+            e.Graphics.DrawImage(Explosion[explosionCounter[t.ID]++ % (Explosion.Length - 1)], new Point(-TankSize / 2, -TankSize / 2));
             
         }
 
@@ -249,7 +249,7 @@ namespace TankWars
 
                    else if (play.died || play.hp == 0)
                     {
-                        if(theWorld.GetExplosionCounter().ContainsKey(play.ID))
+                        if(explosionCounter.ContainsKey(play.ID))
                         {
                             /*if (play.died)
                             {
@@ -337,6 +337,11 @@ namespace TankWars
 
         }
 
+        public Dictionary<int, int> GetExplosionCounter()
+        {
+            return explosionCounter;
+        }
+
         private void LoadTanks()
         {
             TankBodies[0] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\BlueTank.png"), new Size(TankSize, TankSize));
@@ -373,12 +378,9 @@ namespace TankWars
             Projectiles[7] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-yellow.png"), new Size(ProjectileSize, ProjectileSize));
 
 
-            for (int i = 0; i < Explosion.Length; i+= 3)
+            for (int i = 0; i < Explosion.Length; i++)
             {
-                Console.WriteLine(i);
-                Explosion[i] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\explosion_" + i%8 + ".png"), new Size(TankSize, TankSize));
-                Explosion[i+1] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\explosion_" + i%8 + ".png"), new Size(TankSize, TankSize));
-                Explosion[i + 2] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\explosion_" + i % 8 + ".png"), new Size(TankSize, TankSize));
+                Explosion[i] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\frame_" + i + "_delay-0.03s.png"), new Size(TankSize, TankSize));
             }
                 
         }

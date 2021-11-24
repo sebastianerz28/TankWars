@@ -21,7 +21,11 @@ namespace GameController
         public delegate void ErrorOccuredHandler(string ErrorMessage);
         public delegate void ServerUpdateHandler();
         public delegate void WorldReadyHandler();
+        public delegate void SetExplosionCountHandler(int ID);
+        public delegate void RemoveTankExplosionCountHandler(int ID);
 
+        public event RemoveTankExplosionCountHandler RemoveTankExplosionCount;
+        public event SetExplosionCountHandler SetExplosionCounter;
         public event ServerUpdateHandler UpdateArrived;
         public event ErrorOccuredHandler ErrorOccurred;
         public event WorldReadyHandler WorldReady;
@@ -299,19 +303,20 @@ namespace GameController
                             if (tank.disconnected)
                             {
                                 world.GetTanks().Remove(tank.ID);
-                                world.GetExplosionCounter().Remove(tank.ID);
-                            }
+                                RemoveTankExplosionCount(tank.ID);                            }
                             else
                             {
-
                                 world.GetTanks()[tank.ID] = tank;
-                                
+                                if (tank.died)
+                                {
+                                    SetExplosionCounter(tank.ID);
+                                }
                             }
 
                         }
                         else
                         {
-                            world.GetExplosionCounter().Add(tank.ID, 0);
+                            SetExplosionCounter(tank.ID);
                             world.GetTanks().Add(tank.ID, tank);
                         }
                         state.RemoveData(0, s.Length);
