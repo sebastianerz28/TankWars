@@ -104,14 +104,55 @@ namespace TankWars
             nameAndScore.Append(t.score);
 
             using (SolidBrush whiteBrush = new SolidBrush(Color.White))
-            {
+            using (Font bigFont = new Font(SystemFonts.DefaultFont.FontFamily, 14, FontStyle.Regular)) {
                 StringFormat format = new StringFormat();
                 format.Alignment = StringAlignment.Center;
-
-                e.Graphics.DrawString(nameAndScore.ToString(), DefaultFont, whiteBrush, new Point(0, TankSize/2), format);
+                e.Graphics.DrawString(nameAndScore.ToString(), bigFont, whiteBrush, new Point(0, TankSize / 2), format);
             }
         }
 
+        private void HealthbarDrawer(object o, PaintEventArgs e)
+        {
+            Tank t = o as Tank;
+
+            int tankHealth = t.hp;
+
+            int leftSize = (int)(TankSize * ((double)tankHealth / 3));
+            int rightSize = TankSize - leftSize;
+
+            Rectangle leftRectangle = new Rectangle(-TankSize / 2, -TankSize / 2, leftSize, 8);
+            Rectangle rightRectangle = new Rectangle((-TankSize / 2) + leftSize, -TankSize / 2, rightSize, 8);
+
+            Console.WriteLine(-TankSize / 2 + leftSize);
+
+            if (tankHealth == 3)
+            {
+                using (SolidBrush greenBrush = new SolidBrush(Color.Green))
+                {
+                    e.Graphics.FillRectangle(greenBrush, leftRectangle);
+                }
+            }
+            else if (tankHealth == 2)
+            {
+                using (SolidBrush orangeBrush = new SolidBrush(Color.Orange))
+                {
+                    e.Graphics.FillRectangle(orangeBrush, leftRectangle);
+                }
+            }
+            else if (tankHealth == 1)
+            {
+                using (SolidBrush redBrush = new SolidBrush(Color.Red))
+                {
+                    e.Graphics.FillRectangle(redBrush, leftRectangle);
+                }
+            }
+
+            using (SolidBrush grayBrush = new SolidBrush(Color.LightGray))
+            {
+                e.Graphics.FillRectangle(grayBrush, rightRectangle);
+            }
+
+        }
 
         private void TurretDrawer(object o, PaintEventArgs e)
         {
@@ -189,6 +230,7 @@ namespace TankWars
                         DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.orientation.ToAngle(), PlayerDrawer);
                         DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.aiming.ToAngle(), TurretDrawer);
                         DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY() + 5, 0, NameDrawer);
+                        DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY() - 10, 0, HealthbarDrawer);
                     }
 
                     if (play.died || play.hp == 0)

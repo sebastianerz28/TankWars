@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Net.Sockets;
+﻿using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using GameModel;
@@ -18,7 +15,6 @@ namespace GameController
         public int id;
         private World world;
 
-        //private Dictionary<string, bool> keyPressed;
         private string prevKeyPress = "none";
         private string currentKeyPress = "none";
 
@@ -37,10 +33,6 @@ namespace GameController
             world = new World();
             controlCmd.moving = "none";
             controlCmd.fire = "none";
-            //keyPressed.Add("up", false);
-            //keyPressed.Add("down", false);
-            //keyPressed.Add("right", false);
-            //keyPressed.Add("left", false);
         }
 
         public void Connect(string hostName, string playerName)
@@ -229,8 +221,6 @@ namespace GameController
                 {
                     prevKeyPress = "none";
                 }
-                //keyPressed["up"] = false;
-                //controlCmd.moving = "none";
             }
             else if (e.KeyCode == Keys.A)
             {
@@ -244,8 +234,6 @@ namespace GameController
                 {
                     prevKeyPress = "none";
                 }
-                //keyPressed["left"] = false;
-                //controlCmd.moving = "none";
             }
             else if (e.KeyCode == Keys.D)
             {
@@ -259,8 +247,6 @@ namespace GameController
                 {
                     prevKeyPress = "none";
                 }
-                //keyPressed["right"] = false;
-                //controlCmd.moving = "none";
             }
             else if (e.KeyCode == Keys.S)
             {
@@ -274,8 +260,6 @@ namespace GameController
                 {
                     prevKeyPress = "none";
                 }
-                //keyPressed["down"] = false;
-                //controlCmd.moving = "none";
             }
         }
 
