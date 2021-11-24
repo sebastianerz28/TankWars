@@ -156,7 +156,7 @@ namespace TankWars
         private void BeamDrawer(object o, PaintEventArgs e)
         {
 
-            using (System.Drawing.SolidBrush goldBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Gold))
+            using (SolidBrush goldBrush = new SolidBrush(Color.Gold))
             {
                 e.Graphics.FillRectangle(goldBrush, new Rectangle(-(TankSize / 2), -(TankSize / 2), 60, 100000));
             }
@@ -167,8 +167,6 @@ namespace TankWars
         {
             // Center the view on the middle of the world,
             // since the image and world use different coordinate systems
-
-
 
             lock (theWorld)
             {
@@ -263,6 +261,7 @@ namespace TankWars
 
                 // Do anything that Panel (from which we inherit) needs to do
                 base.OnPaint(e);
+                // TODO: move this outside of lock?
             }
 
         }

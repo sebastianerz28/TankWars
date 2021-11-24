@@ -102,6 +102,7 @@ namespace GameController
                     token = obj["tank"];
                     if (token != null)
                     {
+                        WorldReady();
                         state.OnNetworkAction = ReceiveWorld;
                         // Notify any listeners (the view) that a new game world has arrived from the server
                         if (UpdateArrived != null)
@@ -112,6 +113,7 @@ namespace GameController
                     token = obj["proj"];
                     if (token != null)
                     {
+                        WorldReady();
                         state.OnNetworkAction = ReceiveWorld;
                         // Notify any listeners (the view) that a new game world has arrived from the server
                         if (UpdateArrived != null)
@@ -122,6 +124,7 @@ namespace GameController
                     token = obj["beam"];
                     if (token != null)
                     {
+                        WorldReady();
                         state.OnNetworkAction = ReceiveWorld;
                         // Notify any listeners (the view) that a new game world has arrived from the server
                         if (UpdateArrived != null)
@@ -132,6 +135,7 @@ namespace GameController
                     token = obj["power"];
                     if (token != null)
                     {
+                        WorldReady();
                         state.OnNetworkAction = ReceiveWorld;
                         // Notify any listeners (the view) that a new game world has arrived from the server
                         if (UpdateArrived != null)
@@ -141,7 +145,6 @@ namespace GameController
 
                 }
             }
-            WorldReady();
             Networking.GetData(state);
         }
 

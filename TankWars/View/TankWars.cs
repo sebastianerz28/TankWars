@@ -16,7 +16,6 @@ namespace View
         private const int ViewSize = 900;
         public TankWars()
         {
-
             InitializeComponent();
             world = controller.GetWorld();
             controller.ErrorOccurred += ErrorOccurredMessage;
@@ -31,12 +30,13 @@ namespace View
 
         private void InitializeDrawer()
         {
+            // TODO: Lock world at this point?
             // Place and add the drawing panel
             drawer = new DrawingPanel(world);
             drawer.Location = new Point(0, MenuSize);
             drawer.Size = new Size(ViewSize, ViewSize);
-            MethodInvoker invoker = new MethodInvoker(() => Controls.Add(drawer));
-            Invoke(invoker);
+            MethodInvoker invoker = new MethodInvoker(() => this.Controls.Add(drawer));
+            this.Invoke(invoker);
 
             drawer.MouseDown += HandleMouseDown;
             drawer.MouseUp += HandleMouseUp;
@@ -109,17 +109,22 @@ namespace View
             // This will cause the form to redraw as soon as it can
             MethodInvoker invoker = new MethodInvoker(() => this.Invalidate(true));
             // TODO: fix this bug
+            //if(this.Controls.Contains(drawer))
 
-            if(!this.IsDisposed)
+            if (!this.IsDisposed)
                 this.Invoke(invoker);
         }
 
         private void ErrorOccurredMessage(string message)
         {
-            MessageBox.Show(message);
-            connectButton.Enabled = true;
-            IPTextBox.Enabled = true;
-            playerNameTextBox.Enabled = true;
+            MethodInvoker invoker = new MethodInvoker(() =>
+            {
+                MessageBox.Show(message);
+                connectButton.Enabled = true;
+                IPTextBox.Enabled = true;
+                playerNameTextBox.Enabled = true;
+            });
+            this.Invoke(invoker);
         }
         private void connectButton_Click(object sender, EventArgs e)
         {
@@ -128,10 +133,10 @@ namespace View
                 MessageBox.Show("IP or player name cannot be blank");
                 return;
             }
-            controller.Connect(IPTextBox.Text, playerNameTextBox.Text);
             connectButton.Enabled = false;
             IPTextBox.Enabled = false;
             playerNameTextBox.Enabled = false;
+            controller.Connect(IPTextBox.Text, playerNameTextBox.Text);
         }
 
         private void TankWars_FormClosed(object sender, FormClosedEventArgs e)
