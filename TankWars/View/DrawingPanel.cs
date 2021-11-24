@@ -167,7 +167,6 @@ namespace TankWars
         {
             // Center the view on the middle of the world,
             // since the image and world use different coordinate systems
-
             lock (theWorld)
             {
                 int viewSize = Size.Width; // view is square, so we can just use width
@@ -180,10 +179,6 @@ namespace TankWars
                     int backgroundX = -theWorld.GetWorldSize() / 2;
                     int backgroundY = -theWorld.GetWorldSize() / 2;
                     e.Graphics.DrawImage(background, new Point(backgroundX, backgroundY));
-                }
-                else
-                {
-                    e.Graphics.TranslateTransform(viewSize / 2, viewSize / 2);
                 }
 
                 // Draw the players
@@ -254,10 +249,6 @@ namespace TankWars
                     if (!p.died)
                         DrawObjectWithTransform(e, p, p.loc.GetX(), p.loc.GetY(), p.dir.ToAngle(), ProjectileDrawer);
                 }
-
-
-
-
 
                 // Do anything that Panel (from which we inherit) needs to do
                 base.OnPaint(e);

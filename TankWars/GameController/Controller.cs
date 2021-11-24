@@ -104,9 +104,6 @@ namespace GameController
                     {
                         WorldReady();
                         state.OnNetworkAction = ReceiveWorld;
-                        // Notify any listeners (the view) that a new game world has arrived from the server
-                        if (UpdateArrived != null)
-                            UpdateArrived();
                         break;
                     }
 
@@ -115,9 +112,6 @@ namespace GameController
                     {
                         WorldReady();
                         state.OnNetworkAction = ReceiveWorld;
-                        // Notify any listeners (the view) that a new game world has arrived from the server
-                        if (UpdateArrived != null)
-                            UpdateArrived();
                         break;
                     }
 
@@ -126,9 +120,6 @@ namespace GameController
                     {
                         WorldReady();
                         state.OnNetworkAction = ReceiveWorld;
-                        // Notify any listeners (the view) that a new game world has arrived from the server
-                        if (UpdateArrived != null)
-                            UpdateArrived();
                         break;
                     }
 
@@ -137,12 +128,8 @@ namespace GameController
                     {
                         WorldReady();
                         state.OnNetworkAction = ReceiveWorld;
-                        // Notify any listeners (the view) that a new game world has arrived from the server
-                        if (UpdateArrived != null)
-                            UpdateArrived();
                         break;
                     }
-
                 }
             }
             Networking.GetData(state);
@@ -411,12 +398,17 @@ namespace GameController
             else
             {
                 //TODO: handle case when id and worldsize cannot be parsed
-                id = int.Parse(parts[0]);
-                world.SetPlayerID(id);
-                world.SetWorldSize(int.Parse(parts[1]));
+                lock (world)
+                {
+                    id = int.Parse(parts[0]);
+                    world.SetPlayerID(id);
+                    world.SetWorldSize(int.Parse(parts[1]));
+                }
+
                 state.RemoveData(0, parts[0].Length + parts[1].Length);
                 state.OnNetworkAction = ReceiveWalls;
                 Networking.GetData(state);
+
             }
 
             //foreach (string p in parts)
