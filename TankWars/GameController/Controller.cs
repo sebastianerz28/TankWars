@@ -64,6 +64,11 @@ namespace GameController
 
         private void ReceiveWalls(SocketState state)
         {
+            if (state.ErrorOccurred == true)
+            {
+                ErrorOccurred("Lost connection to server");
+                return;
+            }
             string totalData = state.GetData();
             string[] parts = Regex.Split(totalData, @"(?<=[\n])");
             lock (world)
@@ -276,6 +281,11 @@ namespace GameController
 
         private void ReceiveWorld(SocketState state)
         {
+            if (state.ErrorOccurred == true)
+            {
+                ErrorOccurred("Lost connection to server");
+                return;
+            }
             string totalData = state.GetData();
             string[] parts = Regex.Split(totalData, @"(?<=[\n])");
             lock (world)
@@ -387,6 +397,11 @@ namespace GameController
 
         private void ReceiveStartup(SocketState state)
         {
+            if (state.ErrorOccurred == true)
+            {
+                ErrorOccurred("Lost connection to server");
+                return;
+            }
             string totalData = state.GetData();
             string[] parts = Regex.Split(totalData, @"(?<=[\n])"); //, RegexOptions.IgnorePatternWhitespace
 

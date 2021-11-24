@@ -107,12 +107,13 @@ namespace View
         {
             // Invalidate this form and all its children
             // This will cause the form to redraw as soon as it can
+
             MethodInvoker invoker = new MethodInvoker(() => this.Invalidate(true));
             // TODO: fix this bug
             //if(this.Controls.Contains(drawer))
+            this.Invoke(invoker);
+            
 
-            if (!this.IsDisposed)
-                this.Invoke(invoker);
         }
 
         private void ErrorOccurredMessage(string message)
@@ -143,6 +144,14 @@ namespace View
         {
             //TODO: Delete me
             //System.Threading.Thread.CurrentThread.Abort();
+        }
+
+        private void TankWars_FormClosing(object sender, FormClosingEventArgs e)
+        {
+
+            Environment.Exit(0);
+            /*MethodInvoker invoker = new MethodInvoker(() => { });
+            this.Invoke(invoker);*/
         }
     }
 }
