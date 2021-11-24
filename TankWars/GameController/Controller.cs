@@ -333,11 +333,17 @@ namespace GameController
                         Projectile proj = JsonConvert.DeserializeObject<Projectile>(s);
                         if (world.GetProjectiles().ContainsKey(proj.id))
                         {
-
-                            world.GetProjectiles()[proj.id] = proj;
+                            if (proj.died)
+                                world.GetProjectiles().Remove(proj.id);
+                            else
+                            {
+                                world.GetProjectiles()[proj.id] = proj;
+                            }
+                            
                         }
                         else
                         {
+                            if(!proj.died)
                             world.GetProjectiles().Add(proj.id, proj);
                         }
                         state.RemoveData(0, s.Length);
@@ -369,11 +375,16 @@ namespace GameController
                         Powerup powerup = JsonConvert.DeserializeObject<Powerup>(s);
                         if (world.GetPowerups().ContainsKey(powerup.id))
                         {
+                            if (powerup.died)
+                            {
+                                world.GetPowerups().Remove(powerup.id);
+                            }
                             world.GetPowerups()[powerup.id] = powerup;
                         }
                         else
                         {
-                            world.GetPowerups().Add(powerup.id, powerup);
+                            if(!powerup.died)
+                                world.GetPowerups().Add(powerup.id, powerup);
                         }
                         state.RemoveData(0, s.Length);
                         continue;

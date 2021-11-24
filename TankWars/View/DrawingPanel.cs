@@ -36,13 +36,13 @@ namespace TankWars
 
         private Dictionary<int, int> explosionCounter;
         private Dictionary<int, int> BeamCounter;
-        private ArrayList toRemove;
+        
 
 
         public DrawingPanel(World w)
         {
 
-            toRemove = new ArrayList();
+            
             DoubleBuffered = true;
             theWorld = w;
             background = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\Background.png"), new Size(theWorld.GetWorldSize(), theWorld.GetWorldSize()));
@@ -325,13 +325,11 @@ namespace TankWars
 
                 foreach (Projectile p in theWorld.GetProjectiles().Values)
                 {
-                    if (!p.died)
-                        DrawObjectWithTransform(e, p, p.loc.GetX(), p.loc.GetY(), p.dir.ToAngle(), ProjectileDrawer);
-                    else 
-                    {
-                        toRemove.Add(p.id);
-                    }
+                    
+                    DrawObjectWithTransform(e, p, p.loc.GetX(), p.loc.GetY(), p.dir.ToAngle(), ProjectileDrawer);
+                    
                 }
+
                 
                 foreach (Beam b in theWorld.GetBeams().Values)
                 {
