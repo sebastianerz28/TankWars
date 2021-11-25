@@ -36,13 +36,13 @@ namespace TankWars
 
         private Dictionary<int, int> explosionCounter;
         private Dictionary<int, int> BeamCounter;
-
+        private Vector2D PlayObjDist;
 
 
         public DrawingPanel(World w)
         {
 
-
+            PlayObjDist = new Vector2D();
             DoubleBuffered = true;
             theWorld = w;
             background = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\Background.png"), new Size(theWorld.GetWorldSize(), theWorld.GetWorldSize()));
@@ -259,44 +259,39 @@ namespace TankWars
                 // Draw the players
                 foreach (Tank play in theWorld.GetTanks().Values)
                 {
-                    if (play.hp > 0)
+                    PlayObjDist = play.location - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
+                    if (Math.Abs(PlayObjDist.GetX()) < 900 && (Math.Abs(PlayObjDist.GetY()) < 900))
                     {
-
-                        DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.orientation.ToAngle(), PlayerDrawer);
-                        DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.aiming.ToAngle(), TurretDrawer);
-                        DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY() + 5, 0, NameDrawer);
-                        DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY() - 10, 0, HealthbarDrawer);
-                    }
-
-                    else if (play.died || play.hp == 0)
-                    {
-                        if (explosionCounter.ContainsKey(play.ID))
+                        if (play.hp > 0)
                         {
-                            /*if (play.died)
-                            {
-                                theWorld.GetExplosionCounter()[play.ID] = 0;
-                            }
 
-                            if (theWorld.GetExplosionCounter()[play.ID] !=  16)
-                            {*/
-                            DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), 0, ExplosionDrawer);
-                            //}
+                            DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.orientation.ToAngle(), PlayerDrawer);
+                            DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.aiming.ToAngle(), TurretDrawer);
+                            DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY() + 5, 0, NameDrawer);
+                            DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY() - 10, 0, HealthbarDrawer);
                         }
 
-
+                        else if (play.died || play.hp == 0)
+                        {
+                            if (explosionCounter.ContainsKey(play.ID))
+                            {
+                                DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), 0, ExplosionDrawer);
+                            }
+                        }
                     }
-
                 }
 
                 // Draw the powerups
                 foreach (Powerup pow in theWorld.GetPowerups().Values)
                 {
-
-                    DrawObjectWithTransform(e, pow, pow.loc.GetX(), pow.loc.GetY(), 0, PowerupDrawer);
+                    PlayObjDist = pow.loc - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
+                    if (Math.Abs(PlayObjDist.GetX()) < 900 && (Math.Abs(PlayObjDist.GetY()) < 900))
+                        DrawObjectWithTransform(e, pow, pow.loc.GetX(), pow.loc.GetY(), 0, PowerupDrawer);
                 }
 
                 foreach (Wall wall in theWorld.GetWalls().Values)
                 {
+                    
                     int distX = (int)((wall.p1.GetX() - wall.p2.GetX()) / WallSize);
                     int distY = (int)((wall.p1.GetY() - wall.p2.GetY()) / WallSize);
                     int p2X = (int)wall.p2.GetX();
@@ -336,8 +331,9 @@ namespace TankWars
 
                 foreach (Projectile p in theWorld.GetProjectiles().Values)
                 {
-
-                    DrawObjectWithTransform(e, p, p.loc.GetX(), p.loc.GetY(), p.dir.ToAngle(), ProjectileDrawer);
+                    PlayObjDist = p.loc - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
+                    if (Math.Abs(PlayObjDist.GetX()) < 900 && (Math.Abs(PlayObjDist.GetY()) < 900))
+                        DrawObjectWithTransform(e, p, p.loc.GetX(), p.loc.GetY(), p.dir.ToAngle(), ProjectileDrawer);
 
                 }
 
