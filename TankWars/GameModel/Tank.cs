@@ -41,6 +41,9 @@ namespace GameModel
         [JsonProperty(PropertyName = "join")]
         public bool joined { get; private set; }
 
+        /// <summary>
+        /// Default constructor for JSON serialization
+        /// </summary>
         public Tank()
         {
             aiming = new Vector2D(0,-1);

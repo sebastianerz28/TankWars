@@ -18,7 +18,6 @@ namespace GameController
         private string playerName;
         public int id;
         private World world;
-
         private string prevKeyPress = "none";
         private string currentKeyPress = "none";
 
@@ -39,6 +38,9 @@ namespace GameController
         private string jsonString;
         private ControlCmd controlCmd = new ControlCmd();
 
+        /// <summary>
+        /// TODO
+        /// </summary>
         public Controller()
         {
             world = new World();
@@ -46,12 +48,21 @@ namespace GameController
             controlCmd.fire = "none";
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="hostName"></param>
+        /// <param name="playerName"></param>
         public void Connect(string hostName, string playerName)
         {
             this.playerName = playerName;
             Networking.ConnectToServer(FirstContact, hostName, 11000);
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="state"></param>
         private void FirstContact(SocketState state)
         {
             if (state.ErrorOccurred == true)
@@ -65,6 +76,10 @@ namespace GameController
             Networking.GetData(state);
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="state"></param>
         private void ReceiveWalls(SocketState state)
         {
             if (state.ErrorOccurred == true)
@@ -143,6 +158,11 @@ namespace GameController
             Networking.GetData(state);
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="mousePosition"></param>
+        /// <param name="viewSize"></param>
         public void HandleMouseMove(Point mousePosition, int viewSize)
         {
             lock (controlCmd)
@@ -154,6 +174,10 @@ namespace GameController
 
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="e"></param>
         public void CancelMouseRequest(MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -166,6 +190,10 @@ namespace GameController
             }
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="e"></param>
         public void HandleMouseRequest(MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -178,6 +206,10 @@ namespace GameController
             }
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="e"></param>
         public void HandleMoveRequest(KeyEventArgs e) // TODO: create a private method to reduce code
         {
             if (e.KeyCode == Keys.W)
@@ -218,6 +250,10 @@ namespace GameController
             }
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="e"></param>
         public void CancelMoveRequest(KeyEventArgs e) // TODO: create a private method to reduce code
         {
             if (e.KeyCode == Keys.W)
@@ -274,6 +310,10 @@ namespace GameController
             }
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="state"></param>
         private void ReceiveWorld(SocketState state)
         {
             if (state.ErrorOccurred == true)
@@ -402,8 +442,7 @@ namespace GameController
             }
 
             // Notify any listeners (the view) that a new game world has arrived from the server
-            if (UpdateArrived != null)
-                UpdateArrived();
+            UpdateArrived?.Invoke();
 
 
             if (controlCmd.tdir != null)
@@ -414,6 +453,10 @@ namespace GameController
             Networking.GetData(state);
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="state"></param>
         private void ReceiveStartup(SocketState state)
         {
             if (state.ErrorOccurred == true)
@@ -459,6 +502,11 @@ namespace GameController
 
             }
         }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
         public World GetWorld()
         {
             return world;

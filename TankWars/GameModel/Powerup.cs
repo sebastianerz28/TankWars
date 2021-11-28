@@ -19,6 +19,9 @@ namespace GameModel
         [JsonProperty]
         public bool died { get; private set; }
 
+        /// <summary>
+        /// Default constructor for JSON serialization
+        /// </summary>
         public Powerup() { }
     }
 }

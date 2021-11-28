@@ -15,44 +15,82 @@ namespace GameModel
         private int PlayerId;
         private int WorldSize;
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<int, Wall> GetWalls()
         {
             return walls;
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<int, Tank> GetTanks()
         {
             return tanks;
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<int, Projectile> GetProjectiles()
         {
             return projectiles;
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<int, Beam> GetBeams()
         {
             return beams;
         }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<int, Powerup> GetPowerups()
         {
             return powerups;
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
         public int GetPlayerId()
         {
             return PlayerId;
         }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="id"></param>
         public void SetPlayerID(int id)
         {
             PlayerId = id;
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
         public int GetWorldSize()
         {
             return WorldSize;
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="size"></param>
         public void SetWorldSize(int size)
         {
             WorldSize = size;

@@ -28,9 +28,10 @@ namespace GameModel
         [JsonProperty(PropertyName = "owner")]
         public int owner { get; private set; }
 
+        /// <summary>
+        /// Default constructor for JSON serialization
+        /// </summary>
         public Projectile()
-        {
-
-        }
+        {}
     }
 }

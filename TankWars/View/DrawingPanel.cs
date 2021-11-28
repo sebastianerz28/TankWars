@@ -13,7 +13,6 @@ namespace TankWars
 {
     public class DrawingPanel : Panel
     {
-
         private World theWorld;
         private Image background;
         private Image wallImage;
@@ -172,6 +171,11 @@ namespace TankWars
 
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="e"></param>
         private void TurretDrawer(object o, PaintEventArgs e)
         {
             Tank t = o as Tank;
@@ -212,7 +216,11 @@ namespace TankWars
         }
 
 
-
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="e"></param>
         private void BeamDrawer(object o, PaintEventArgs e)
         {
             Beam b = o as Beam;
@@ -223,6 +231,12 @@ namespace TankWars
             }
             ;
         }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="e"></param>
         private void SupportBeamDrawer(object o, PaintEventArgs e)
         {
             Beam b = o as Beam;
@@ -234,7 +248,10 @@ namespace TankWars
             ;
         }
 
-        // This method is invoked when the DrawingPanel needs to be re-drawn
+        /// <summary>
+        /// This method is invoked when the DrawingPanel needs to be re-drawn
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnPaint(PaintEventArgs e)
         {
             // Center the view on the middle of the world,
@@ -288,7 +305,7 @@ namespace TankWars
 
                 foreach (Wall wall in theWorld.GetWalls().Values)
                 {
-                    
+
                     int distX = (int)((wall.p1.GetX() - wall.p2.GetX()) / WallSize);
                     int distY = (int)((wall.p1.GetY() - wall.p2.GetY()) / WallSize);
                     int p2X = (int)wall.p2.GetX();
@@ -334,7 +351,6 @@ namespace TankWars
 
                 }
 
-
                 foreach (Beam b in theWorld.GetBeams().Values)
                 {
                     if (BeamCounter[b.id] <= 60)
@@ -349,19 +365,17 @@ namespace TankWars
                         DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), (b.dir.ToAngle() - 180) - 10, SupportBeamDrawer);
 
                     }
-
-
                 }
-
-
-
-
                 // Do anything that Panel (from which we inherit) needs to do
                 base.OnPaint(e);
             }
-
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="counter"></param>
+        /// <returns></returns>
         private Color ChooseColor(int counter)
         {
             if (counter < 10)
@@ -377,16 +391,29 @@ namespace TankWars
             else
                 return Colors[5];
         }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<int, int> GetExplosionCounter()
         {
 
             return explosionCounter;
         }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<int, int> GetBeamCounter()
         {
             return BeamCounter;
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
         private void LoadTanks()
         {
             TankBodies[0] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\BlueTank.png"), new Size(TankSize, TankSize));
@@ -429,6 +456,10 @@ namespace TankWars
             }
 
         }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
         private void FillColors()
         {
             Colors[0] = Color.Red;

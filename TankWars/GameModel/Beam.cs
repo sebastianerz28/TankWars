@@ -2,9 +2,6 @@
 // Author: Sebastian Ramirez
 // Beam class for CS 3500 TankWars Client (PS8)
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using TankWars;
 using Newtonsoft.Json;
 namespace GameModel
@@ -24,6 +21,9 @@ namespace GameModel
         [JsonProperty(PropertyName = "owner")]
         public int owner { get; private set; }
 
+        /// <summary>
+        /// Default constructor for JSON serialization
+        /// </summary>
         public Beam() { }
     }
 }
