@@ -1,9 +1,12 @@
-﻿using System;
+﻿// Author: Grant Nations
+// Author: Sebastian Ramirez
+// DrawingPanel class for CS 3500 TankWars Client (PS8)
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-
 using GameModel;
 
 namespace TankWars
@@ -15,7 +18,6 @@ namespace TankWars
         private Image background;
         private Image wallImage;
         private Image PowerUpImage;
-
 
         private Image[] TankBodies;
         private Image[] TankTurrets;
@@ -92,13 +94,18 @@ namespace TankWars
         /// </summary>
         /// <param name="o">The object to draw</param>
         /// <param name="e">The PaintEventArgs to access the graphics</param>
-        private void PlayerDrawer(object o, PaintEventArgs e)
+        private void TankDrawer(object o, PaintEventArgs e)
         {
-            Tank p = o as Tank;
+            Tank t = o as Tank;
 
-            e.Graphics.DrawImage(TankBodies[p.ID % TankBodies.Length], new Point(-TankSize / 2, -TankSize / 2));
+            e.Graphics.DrawImage(TankBodies[t.ID % TankBodies.Length], new Point(-TankSize / 2, -TankSize / 2));
         }
 
+        /// <summary>
+        ///  TODO
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="e"></param>
         private void NameDrawer(object o, PaintEventArgs e)
         {
             Tank t = o as Tank;
@@ -117,6 +124,11 @@ namespace TankWars
             }
         }
 
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="e"></param>
         private void HealthbarDrawer(object o, PaintEventArgs e)
         {
             Tank t = o as Tank;
@@ -230,10 +242,10 @@ namespace TankWars
             lock (theWorld)
             {
                 int viewSize = Size.Width; // view is square, so we can just use width
-                if (theWorld.GetTanks().TryGetValue(theWorld.GetPlayerId(), out Tank player))
+                if (theWorld.GetTanks().TryGetValue(theWorld.GetPlayerId(), out Tank tank))
                 {
-                    double playerX = player.location.GetX();
-                    double playerY = player.location.GetY();
+                    double playerX = tank.location.GetX();
+                    double playerY = tank.location.GetY();
                     e.Graphics.TranslateTransform((float)(-playerX + (viewSize / 2)), (float)(-playerY + (viewSize / 2)));
 
                     int backgroundX = -theWorld.GetWorldSize() / 2;
@@ -242,25 +254,25 @@ namespace TankWars
                 }
 
                 // Draw the players
-                foreach (Tank play in theWorld.GetTanks().Values)
+                foreach (Tank t in theWorld.GetTanks().Values)
                 {
-                    PlayObjDist = play.location - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
+                    PlayObjDist = t.location - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
                     if (Math.Abs(PlayObjDist.GetX()) < 900 && (Math.Abs(PlayObjDist.GetY()) < 900))
                     {
-                        if (play.hp > 0)
+                        if (t.hp > 0)
                         {
 
-                            DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.orientation.ToAngle(), PlayerDrawer);
-                            DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), play.aiming.ToAngle(), TurretDrawer);
-                            DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY() + 5, 0, NameDrawer);
-                            DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY() - 10, 0, HealthbarDrawer);
+                            DrawObjectWithTransform(e, t, t.location.GetX(), t.location.GetY(), t.orientation.ToAngle(), TankDrawer);
+                            DrawObjectWithTransform(e, t, t.location.GetX(), t.location.GetY(), t.aiming.ToAngle(), TurretDrawer);
+                            DrawObjectWithTransform(e, t, t.location.GetX(), t.location.GetY() + 5, 0, NameDrawer);
+                            DrawObjectWithTransform(e, t, t.location.GetX(), t.location.GetY() - 10, 0, HealthbarDrawer);
                         }
 
-                        else if (play.died || play.hp == 0)
+                        else if (t.died || t.hp == 0)
                         {
-                            if (explosionCounter.ContainsKey(play.ID))
+                            if (explosionCounter.ContainsKey(t.ID))
                             {
-                                DrawObjectWithTransform(e, play, play.location.GetX(), play.location.GetY(), 0, ExplosionDrawer);
+                                DrawObjectWithTransform(e, t, t.location.GetX(), t.location.GetY(), 0, ExplosionDrawer);
                             }
                         }
                     }

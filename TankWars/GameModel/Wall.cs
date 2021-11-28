@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Author: Grant Nations
+// Author: Sebastian Ramirez
+// Wall class for CS 3500 TankWars Client (PS8)
+
+using Newtonsoft.Json;
 using TankWars;
 
 namespace GameModel
@@ -12,16 +13,17 @@ namespace GameModel
         [JsonProperty(PropertyName = "wall")]
         public int id { get; private set; }
 
-        [JsonProperty(PropertyName = "p1")]
+        [JsonProperty]
         public Vector2D p1 { get; private set; }
 
-        [JsonProperty(PropertyName = "p2")]
+        [JsonProperty]
         public Vector2D p2 { get; private set; }
 
+        /// <summary>
+        /// Default constructor for JSON serialization
+        /// </summary>
         public Wall()
-        {
-
-        }
+        {}
 
 
 

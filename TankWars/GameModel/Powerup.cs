@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Author: Grant Nations
+// Author: Sebastian Ramirez
+// Powerup class for CS 3500 TankWars Client (PS8)
+
+using Newtonsoft.Json;
 using TankWars;
 
 namespace GameModel

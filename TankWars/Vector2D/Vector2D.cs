@@ -1,6 +1,7 @@
 ﻿// Author: Daniel Kopta, Fall 2017
 // Staff solution for CS 3500 final project
 // University of Utah
+
 using System;
 using Newtonsoft.Json;
 namespace TankWars

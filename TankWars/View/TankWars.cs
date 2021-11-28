@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Author: Grant Nations
+// Author: Sebastian Ramirez
+// TankWars (main form) class for CS 3500 TankWars Client (PS8)
+
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using GameController;

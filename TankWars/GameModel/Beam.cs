@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Author: Grant Nations
+// Author: Sebastian Ramirez
+// Beam class for CS 3500 TankWars Client (PS8)
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using TankWars;

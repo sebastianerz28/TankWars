@@ -1,4 +1,8 @@
-﻿using System.Drawing;
+﻿// Author: Grant Nations
+// Author: Sebastian Ramirez
+// Controller class for CS 3500 TankWars Client (PS8)
+
+using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using GameModel;

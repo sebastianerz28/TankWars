@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Author: Grant Nations
+// Author: Sebastian Ramirez
+// Tank class for CS 3500 TankWars Client (PS8)
+
+using Newtonsoft.Json;
 using TankWars;
 
 namespace GameModel
@@ -22,16 +23,16 @@ namespace GameModel
         [JsonProperty(PropertyName = "tdir")]
         public Vector2D aiming { get; private set; }
 
-        [JsonProperty(PropertyName = "name")]
+        [JsonProperty]
         public string name { get; private set; }
 
-        [JsonProperty(PropertyName = "hp")]
+        [JsonProperty]
         public int hp { get; private set; }
 
-        [JsonProperty(PropertyName = "score")]
+        [JsonProperty]
         public int score { get; private set; }
 
-        [JsonProperty(PropertyName = "died")]
+        [JsonProperty]
         public bool died { get; private set; }
 
         [JsonProperty(PropertyName = "dc")]
@@ -39,8 +40,6 @@ namespace GameModel
 
         [JsonProperty(PropertyName = "join")]
         public bool joined { get; private set; }
-
-        
 
         public Tank()
         {
@@ -50,8 +49,5 @@ namespace GameModel
             disconnected = false;
             joined = false;
         }
-
-    }
-
-     
+    }  
 }
