@@ -32,7 +32,7 @@ namespace View
             this.IPTextBox = new System.Windows.Forms.TextBox();
             this.playerNameTextBox = new System.Windows.Forms.TextBox();
             this.connectButton = new System.Windows.Forms.Button();
-            this.IPLabel = new System.Windows.Forms.Label();
+            this.AddressLabel = new System.Windows.Forms.Label();
             this.playerNameLabel = new System.Windows.Forms.Label();
             this.eventLog1 = new System.Diagnostics.EventLog();
             ((System.ComponentModel.ISupportInitialize)(this.eventLog1)).BeginInit();
@@ -64,14 +64,14 @@ namespace View
             this.connectButton.UseVisualStyleBackColor = true;
             this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
             // 
-            // IPLabel
+            // AddressLabel
             // 
-            this.IPLabel.AutoSize = true;
-            this.IPLabel.Location = new System.Drawing.Point(13, 14);
-            this.IPLabel.Name = "IPLabel";
-            this.IPLabel.Size = new System.Drawing.Size(61, 13);
-            this.IPLabel.TabIndex = 3;
-            this.IPLabel.Text = "IP Address:";
+            this.AddressLabel.AutoSize = true;
+            this.AddressLabel.Location = new System.Drawing.Point(13, 14);
+            this.AddressLabel.Name = "AddressLabel";
+            this.AddressLabel.Size = new System.Drawing.Size(82, 13);
+            this.AddressLabel.TabIndex = 3;
+            this.AddressLabel.Text = "Server Address:";
             // 
             // playerNameLabel
             // 
@@ -92,12 +92,12 @@ namespace View
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(884, 921);
             this.Controls.Add(this.playerNameLabel);
-            this.Controls.Add(this.IPLabel);
+            this.Controls.Add(this.AddressLabel);
             this.Controls.Add(this.connectButton);
             this.Controls.Add(this.playerNameTextBox);
             this.Controls.Add(this.IPTextBox);
             this.Name = "TankWars";
-            this.Text = "Form1";
+            this.Text = "TankWars";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TankWars_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.eventLog1)).EndInit();
             this.ResumeLayout(false);
@@ -110,7 +110,7 @@ namespace View
         private System.Windows.Forms.TextBox IPTextBox;
         private System.Windows.Forms.TextBox playerNameTextBox;
         private System.Windows.Forms.Button connectButton;
-        private System.Windows.Forms.Label IPLabel;
+        private System.Windows.Forms.Label AddressLabel;
         private System.Windows.Forms.Label playerNameLabel;
         private System.Diagnostics.EventLog eventLog1;
     }

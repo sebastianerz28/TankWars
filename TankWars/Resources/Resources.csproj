@@ -43,14 +43,6 @@
     <Content Include="Images\DarkTank.png" />
     <Content Include="Images\DarkTurret.png" />
     <Content Include="Images\explosion.gif" />
-    <Content Include="Images\explosion_0.png" />
-    <Content Include="Images\explosion_1.png" />
-    <Content Include="Images\explosion_2.png" />
-    <Content Include="Images\explosion_3.png" />
-    <Content Include="Images\explosion_4.png" />
-    <Content Include="Images\explosion_5.png" />
-    <Content Include="Images\explosion_6.png" />
-    <Content Include="Images\explosion_7.png" />
     <Content Include="Images\frame_0_delay-0.03s.png" />
     <Content Include="Images\frame_1_delay-0.03s.png" />
     <Content Include="Images\frame_2_delay-0.03s.png" />

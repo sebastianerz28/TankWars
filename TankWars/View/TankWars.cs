@@ -39,15 +39,16 @@ namespace View
             drawer.GetExplosionCounter().Remove(ID);
         }
         /// <summary>
-        /// Sets explosion counter with id of tank and sets frame counter to 0
-        /// Triggered when tank dies
+        /// Manages the frame counter for drawing a tank explosion animation: Sets the frame counter for a specific id to 0. Triggered when a tank dies
         /// </summary>
         /// <param name="ID"></param>
         private void SetExplosionCounter(int ID)
         {
-            if(drawer.GetExplosionCounter().TryGetValue(ID, out int counter)){
+            if (drawer.GetExplosionCounter().TryGetValue(ID, out int counter))
+            {
                 counter = 0;
-            } else
+            }
+            else
             {
                 drawer.GetExplosionCounter().Add(ID, 0);
             }
@@ -74,12 +75,12 @@ namespace View
             controller.SetBeamCounter += SetBeamCounter;
         }
         /// <summary>
-        /// Sets the beam counter with an id and setting the frame counter to 0
+        /// Manages the frame counter for drawing a beam animation: Sets the frame counter for a specific beam id to 0
         /// </summary>
         /// <param name="id"></param>
         private void SetBeamCounter(int id)
         {
-            if(drawer.GetBeamCounter().TryGetValue(id, out int counter))
+            if (drawer.GetBeamCounter().TryGetValue(id, out int counter))
             {
                 counter = 0;
             }
@@ -87,7 +88,7 @@ namespace View
             {
                 drawer.GetBeamCounter().Add(id, 0);
             }
-           
+
         }
         /// <summary>
         /// Handle mouse moving in the panel
@@ -139,7 +140,7 @@ namespace View
         /// <param name="e"></param>
         private void HandleKeyDown(object sender, KeyEventArgs e)
         {
-            
+
             if (e.KeyCode == Keys.Escape)
                 TankWars_FormClosing(sender, new FormClosingEventArgs(CloseReason.ApplicationExitCall, true));
 
@@ -161,9 +162,9 @@ namespace View
             // This will cause the form to redraw as soon as it can
 
             MethodInvoker invoker = new MethodInvoker(() => this.Invalidate(true));
-            
+
             this.Invoke(invoker);
-            
+
 
         }
         /// <summary>
@@ -184,8 +185,7 @@ namespace View
         }
 
         /// <summary>
-        /// Event to handle connect button
-        /// Will not allow a blank or missing ip/name
+        /// Event to handle connect button. Will not allow a blank or missing address name
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -202,9 +202,9 @@ namespace View
             controller.Connect(IPTextBox.Text, playerNameTextBox.Text);
         }
 
-        
+
         /// <summary>
-        /// Closes form with exit code 0 upon hitting Red X for graceful exit
+        /// Closes form with exit code 0 upon hitting the red X in the corner of the form for graceful exit
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -215,9 +215,7 @@ namespace View
                 Environment.Exit(0);
             }
             catch
-            {
-
-            }
+            { }
         }
     }
 }

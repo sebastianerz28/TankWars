@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using GameModel;
-using static GameController.Controller;
 
 namespace TankWars
 {
@@ -102,16 +97,6 @@ namespace TankWars
             Tank p = o as Tank;
 
             e.Graphics.DrawImage(TankBodies[p.ID % TankBodies.Length], new Point(-TankSize / 2, -TankSize / 2));
-
-            /*   e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-               using (System.Drawing.SolidBrush redBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red))
-               {
-                   // Rectangles are drawn starting from the top-left corner.
-                   // So if we want the rectangle centered on the player's location, we have to offset it
-                   // by half its size to the left (-width/2) and up (-height/2)
-                   Rectangle r = new Rectangle(-(60 / 2), -(60 / 2), 60, 60);
-                   e.Graphics.FillRectangle(redBrush, r);
-               }*/
         }
 
         private void NameDrawer(object o, PaintEventArgs e)
@@ -340,9 +325,6 @@ namespace TankWars
 
                 foreach (Beam b in theWorld.GetBeams().Values)
                 {
-
-                    /* b.org.Normalize();
-                     b.dir.Normalize();*/
                     if (BeamCounter[b.id] <= 60)
                     {
 
@@ -364,7 +346,6 @@ namespace TankWars
 
                 // Do anything that Panel (from which we inherit) needs to do
                 base.OnPaint(e);
-                // TODO: move this outside of lock?
             }
 
         }
