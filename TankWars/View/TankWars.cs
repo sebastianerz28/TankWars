@@ -223,5 +223,15 @@ namespace View
             catch
             { }
         }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("TankWars controls:\nUp: W \nDown: S \nLeft: A \nRight: D \nFire shot: left click \nFire Beam: Right Click \nExit: ESC");
+        }
+
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Additional Features: \nBeam animation changes colors and 3 smaller beam radiate out \nExplosion is animated flame \nOnly draws tanks, projectiles and powerups if they are within view distance of the player.");
+        }
     }
 }

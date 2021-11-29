@@ -81,6 +81,9 @@ ADDED FEATURES:
 
 	Pressing the “ESC” key on the keyboard while in the game will terminate the application.
 
+	MenuStrip and clickable buttons for Controls and Additional Features
+	
+	Shows a message box showing all controls for the game and briefly lists additional design changes/features
 
 
 
@@ -106,7 +109,10 @@ DESIGN DECISIONS:
 
 	Laser animation:
 
-	TODO
+	The laser is animated over the course of 60 frames. Every ten frames it changes colors from red, yellow, green, blue, purple
+	which are the colors of the rainbow. Upon each firing of the laser 3 minitaure beams on each side start at a significantly reduced
+	length and reduce in length over the course of the animation. This is achieved by setting the length to a fixed size of 60
+	and subtracting the frame counter which goes up to a max of 60 which results in a steady reduction in length.
 
 
 	Health bar:

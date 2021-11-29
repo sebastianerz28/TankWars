@@ -35,9 +35,10 @@ namespace TankWars
         private Vector2D playObjDist;
 
         /// <summary>
-        /// TODO
+        /// Initializes drawing panel taking in the world that it is to draw
+        /// Loads in all used images(tank bodies, turrets, background, etc.) and colors to be used for the beam
         /// </summary>
-        /// <param name="w"></param>
+        /// <param name="w">takes in a world to draw on each instance of OnPaint</param>
         public DrawingPanel(World w)
         {
 
@@ -104,7 +105,7 @@ namespace TankWars
         }
 
         /// <summary>
-        ///  TODO
+        ///  Draws the name of the tank below the body of the tank and appends the current score of the player below
         /// </summary>
         /// <param name="o"></param>
         /// <param name="e"></param>
@@ -127,7 +128,9 @@ namespace TankWars
         }
 
         /// <summary>
-        /// TODO
+        /// Draws the health bar above the tank
+        /// Will be drawn green if full hp, yellow if 2/3 total HP, and red if 1/3 total hp
+        /// Fills in remaining deadspace with grey filler to keep health bar consistent in size
         /// </summary>
         /// <param name="o"></param>
         /// <param name="e"></param>
@@ -175,7 +178,7 @@ namespace TankWars
         }
 
         /// <summary>
-        /// TODO
+        /// Draws the turret at the tank bodies center
         /// </summary>
         /// <param name="o"></param>
         /// <param name="e"></param>
@@ -198,12 +201,20 @@ namespace TankWars
             Powerup p = o as Powerup;
             e.Graphics.DrawImage(powerUpImage, new Point(-PowerupSize / 2, -PowerupSize / 2));
         }
-
+        /// <summary>
+        /// Draws the wall image
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="e"></param>
         private void WallDrawer(object o, PaintEventArgs e)
         {
             e.Graphics.DrawImage(wallImage, new Point(-WallSize / 2, -WallSize / 2));
         }
-
+        /// <summary>
+        /// Draws the projectile and choses appropriate image based on 
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="e"></param>
         private void ProjectileDrawer(object o, PaintEventArgs e)
         {
             Projectile p = o as Projectile;
@@ -211,6 +222,14 @@ namespace TankWars
             e.Graphics.DrawImage(texture, new Point(-ProjectileSize / 2, -ProjectileSize / 2));
         }
 
+        /// <summary>
+        /// Draws Explosion
+        /// Eplosion is drawn when a tanks HP is 0.
+        /// The explosion is a flame which loops loop is achieved using a seperate frame counter stored in the drawing panel
+        /// Each Call to explosionDrawer increments the unique explosions frame counter by 1
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="e"></param>
         private void ExplosionDrawer(object o, PaintEventArgs e)
         {
             Tank t = o as Tank;
@@ -220,7 +239,10 @@ namespace TankWars
 
 
         /// <summary>
-        /// TODO
+        /// Draws Beam
+        /// Beam is drawn by drawing a 2 pixel wide recetangle the length of the world size so as to cover the whole world
+        /// Each beam has a frame counter which serves as a way to control how long beam shall be drawn for and to chose color
+        /// Color is chosen based on frame counter (See choose color to learn how beam counter is chosen)
         /// </summary>
         /// <param name="o"></param>
         /// <param name="e"></param>
@@ -236,7 +258,9 @@ namespace TankWars
         }
 
         /// <summary>
-        /// TODO
+        /// Draws support beams that retracts by one pixel every frame.
+        /// Color is chosen in the same manner as draw beam and uses the same frame counter as the beam it is drawn around.
+        /// Starts at a length of 60 and decreases by 1 pixel every frame.
         /// </summary>
         /// <param name="o"></param>
         /// <param name="e"></param>
@@ -276,8 +300,9 @@ namespace TankWars
                 // Draw the players
                 foreach (Tank t in theWorld.Tanks.Values)
                 {
+                    //Finds the distance from t to the players tank draws only if the x and y are less than or 
                     playObjDist = t.Location - theWorld.Tanks[theWorld.PlayerID].Location;
-                    if (Math.Abs(playObjDist.GetX()) < 900 && (Math.Abs(playObjDist.GetY()) < 900))
+                    if (Math.Abs(playObjDist.GetX()) <= 900 && (Math.Abs(playObjDist.GetY()) <= 900))
                     {
                         if (t.HP > 0)
                         {
@@ -302,7 +327,7 @@ namespace TankWars
                 foreach (Powerup pow in theWorld.Powerups.Values)
                 {
                     playObjDist = pow.Location - theWorld.Tanks[theWorld.PlayerID].Location;
-                    if (Math.Abs(playObjDist.GetX()) < 900 && (Math.Abs(playObjDist.GetY()) < 900))
+                    if (Math.Abs(playObjDist.GetX()) <= 900 && (Math.Abs(playObjDist.GetY()) <= 900))
                         DrawObjectWithTransform(e, pow, pow.Location.GetX(), pow.Location.GetY(), 0, PowerupDrawer);
                 }
 
@@ -348,8 +373,9 @@ namespace TankWars
 
                 foreach (Projectile p in theWorld.Projectiles.Values)
                 {
+
                     playObjDist = p.Location - theWorld.Tanks[theWorld.PlayerID].Location;
-                    if (Math.Abs(playObjDist.GetX()) < 900 && (Math.Abs(playObjDist.GetY()) < 900))
+                    if (Math.Abs(playObjDist.GetX()) <= 900 && (Math.Abs(playObjDist.GetY()) <= 900))
                         DrawObjectWithTransform(e, p, p.Location.GetX(), p.Location.GetY(), p.Direction.ToAngle(), ProjectileDrawer);
 
                 }
@@ -360,12 +386,15 @@ namespace TankWars
                     {
 
                         DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), b.Direction.ToAngle() - 180, BeamDrawer);
-                        DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) + 30, SupportBeamDrawer);
-                        DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) - 30, SupportBeamDrawer);
-                        DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) + 20, SupportBeamDrawer);
-                        DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) - 20, SupportBeamDrawer);
-                        DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) + 10, SupportBeamDrawer);
-                        DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) - 10, SupportBeamDrawer);
+
+                        ///Draws 3 supporting beams on the right and left sides of the main beam at incrementing and decrementing
+                        ///angles of 10 to 30
+                        for(int i = 30; i >= 0; i -= 10)
+                        {
+                            DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) + i, SupportBeamDrawer);
+                            DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) - i, SupportBeamDrawer);
+                        }
+                        
 
                     }
                 }
@@ -375,7 +404,8 @@ namespace TankWars
         }
 
         /// <summary>
-        /// TODO
+        /// Color is chosen every time the frame counter in beamcounter is incremented by 10
+        /// Below [0-10) is red, [10-20) is yellow, [20-30) is green etc. until purple (colors of rainbow)
         /// </summary>
         /// <param name="counter"></param>
         /// <returns></returns>
@@ -396,7 +426,7 @@ namespace TankWars
         }
 
         /// <summary>
-        /// TODO
+        ///  Returns the Dictionary that stores the frame the explosion is currently on
         /// </summary>
         /// <returns></returns>
         public Dictionary<int, int> GetExplosionCounter()
@@ -406,7 +436,7 @@ namespace TankWars
         }
 
         /// <summary>
-        /// TODO
+        /// Returns the dictionary that stores the frame the beam is currently on
         /// </summary>
         /// <returns></returns>
         public Dictionary<int, int> GetBeamCounter()
@@ -415,7 +445,8 @@ namespace TankWars
         }
 
         /// <summary>
-        /// TODO
+        /// Method that loads each image from a file and stores into an array
+        /// Each turret has a corresponding colors so they are each at the same index for organizational purposes
         /// </summary>
         private void LoadTanks()
         {
@@ -461,8 +492,9 @@ namespace TankWars
         }
 
         /// <summary>
-        /// TODO
+        /// Sets the elements in each unique index of the colors array to a unique color of the rainbow
         /// </summary>
+        /// 
         private void FillColors()
         {
             colors[0] = Color.Red;
