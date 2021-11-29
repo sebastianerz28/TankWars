@@ -13,7 +13,10 @@ using TankWars;
 
 namespace GameController
 {
-
+    /// <summary>
+    /// Controller handles updating the the world(model), telling the view to draw a frame,
+    /// connecting to the server, and sending user inputs to the server
+    /// </summary>
     public class Controller
     {
         private string playerName;

@@ -11,6 +11,10 @@ using GameModel;
 
 namespace TankWars
 {
+    /// <summary>
+    /// Drawing Panel handles drawing each frame that is recieved by the server
+    /// Centers around the players tank
+    /// </summary>
     public class DrawingPanel : Panel
     {
         private World theWorld;

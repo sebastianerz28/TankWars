@@ -7,6 +7,10 @@ using TankWars;
 
 namespace GameModel
 {
+    /// <summary>
+    /// Tank class represents a player
+    /// Contains fields representing how to identify it, and how to draw it. 
+    /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
     public class Tank
     {

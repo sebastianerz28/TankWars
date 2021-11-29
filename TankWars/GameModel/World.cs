@@ -1,10 +1,12 @@
 ﻿// Author: Grant Nations
 // Author: Sebastian Ramirez
 // World class for CS 3500 TankWars Client (PS8)
-
 using System.Collections.Generic;
 namespace GameModel
 {
+    /// <summary>
+    /// Stores information about walls, tanks, projectiles, beams, and powerups
+    /// </summary>
     public class World
     {
         public Dictionary<int, Wall> Walls { get; private set; }

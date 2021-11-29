@@ -7,6 +7,10 @@ using Newtonsoft.Json;
 
 namespace GameModel
 {
+    /// <summary>
+    /// Control commands are how the client will tell the server what it wants to do (moving, firing, tdir). 
+    /// Properties are updated in the controller
+    /// </summary>
     [JsonObject]
     public class ControlCmd
     {

@@ -10,6 +10,10 @@ using TankWars;
 
 namespace GameModel
 {
+    /// <summary>
+    /// Projectile class contains fields related to location, movement, how to identify it
+    /// and whether it should be drawn.
+    /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
     public class Projectile
     {

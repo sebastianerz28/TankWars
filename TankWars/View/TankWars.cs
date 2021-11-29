@@ -11,6 +11,11 @@ using TankWars;
 
 namespace View
 {
+    /// <summary>
+    /// Main view component of TankWars
+    /// Handles user inputs and sends to controller for further use
+    /// Controller initializes fields of the view when appropriate and tells view when to draw
+    /// </summary>
     public partial class TankWars : Form
     {
         private Controller controller = new Controller();

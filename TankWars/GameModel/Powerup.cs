@@ -7,6 +7,10 @@ using TankWars;
 
 namespace GameModel
 {
+    /// <summary>
+    /// Powerups when collected allow beams to be fired
+    /// Consists of an ID, location, and died(has it been collected/should it be drawn)
+    /// </summary>
     [JsonObject]
     public class Powerup
     {

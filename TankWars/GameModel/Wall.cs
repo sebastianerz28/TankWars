@@ -7,6 +7,10 @@ using TankWars;
 
 namespace GameModel
 {
+    /// <summary>
+    /// Wall class represents the borders of the world and the obstacles that act as cover in the world
+    /// Contains fields on how to identify it, and it's location/orientation
+    /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
     public class Wall
     {
