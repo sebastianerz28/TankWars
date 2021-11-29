@@ -18,11 +18,5 @@ namespace GameModel
 
         [JsonProperty]
         public Vector2D tdir { get; set; }
-
-        /// <summary>
-        /// Default constructor for JSON serialization
-        /// </summary>
-        public ControlCmd() { }
-
     }
 }

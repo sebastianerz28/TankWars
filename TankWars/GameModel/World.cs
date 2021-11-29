@@ -12,8 +12,8 @@ namespace GameModel
         private Dictionary<int, Projectile> projectiles = new Dictionary<int, Projectile>();
         private Dictionary<int, Beam> beams = new Dictionary<int, Beam>();
         private Dictionary<int, Powerup> powerups = new Dictionary<int, Powerup>();
-        private int PlayerId;
-        private int WorldSize;
+        private int playerID;
+        private int worldSize;
 
         /// <summary>
         /// TODO
@@ -66,7 +66,7 @@ namespace GameModel
         /// <returns></returns>
         public int GetPlayerId()
         {
-            return PlayerId;
+            return playerID;
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace GameModel
         /// <param name="id"></param>
         public void SetPlayerID(int id)
         {
-            PlayerId = id;
+            playerID = id;
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace GameModel
         /// <returns></returns>
         public int GetWorldSize()
         {
-            return WorldSize;
+            return worldSize;
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace GameModel
         /// <param name="size"></param>
         public void SetWorldSize(int size)
         {
-            WorldSize = size;
+            worldSize = size;
         }
     }
 }

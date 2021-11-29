@@ -16,8 +16,10 @@ namespace View
         private Controller controller = new Controller();
         private DrawingPanel drawer;
         private World world;
+
         private const int MenuSize = 60;
         private const int ViewSize = 900;
+
         private delegate void FrameEvent();
 
         public TankWars()

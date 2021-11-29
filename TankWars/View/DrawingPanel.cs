@@ -16,13 +16,13 @@ namespace TankWars
         private World theWorld;
         private Image background;
         private Image wallImage;
-        private Image PowerUpImage;
+        private Image powerUpImage;
 
-        private Image[] TankBodies;
-        private Image[] TankTurrets;
-        private Image[] Projectiles;
-        private Image[] Explosion;
-        private Color[] Colors;
+        private Image[] tankBodies;
+        private Image[] tankTurrets;
+        private Image[] projectiles;
+        private Image[] explosion;
+        private Color[] colors;
 
         private const int WallSize = 50;
         private const int TankSize = 60;
@@ -31,27 +31,27 @@ namespace TankWars
         private const int PowerupSize = 30;
 
         private Dictionary<int, int> explosionCounter;
-        private Dictionary<int, int> BeamCounter;
-        private Vector2D PlayObjDist;
+        private Dictionary<int, int> beamCounter;
+        private Vector2D playObjDist;
 
 
         public DrawingPanel(World w)
         {
 
-            PlayObjDist = new Vector2D();
+            playObjDist = new Vector2D();
             DoubleBuffered = true;
             theWorld = w;
             background = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\Background.png"), new Size(theWorld.GetWorldSize(), theWorld.GetWorldSize()));
             wallImage = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\WallSprite.png"), new Size(WallSize, WallSize));
-            PowerUpImage = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\ChugJug.png"), new Size(PowerupSize, PowerupSize));
+            powerUpImage = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\ChugJug.png"), new Size(PowerupSize, PowerupSize));
             explosionCounter = new Dictionary<int, int>();
-            BeamCounter = new Dictionary<int, int>();
+            beamCounter = new Dictionary<int, int>();
 
-            TankBodies = new Image[8];
-            TankTurrets = new Image[8];
-            Projectiles = new Image[8];
-            Explosion = new Image[38];
-            Colors = new Color[6];
+            tankBodies = new Image[8];
+            tankTurrets = new Image[8];
+            projectiles = new Image[8];
+            explosion = new Image[38];
+            colors = new Color[6];
 
             LoadTanks();
             FillColors();
@@ -97,7 +97,7 @@ namespace TankWars
         {
             Tank t = o as Tank;
 
-            e.Graphics.DrawImage(TankBodies[t.ID % TankBodies.Length], new Point(-TankSize / 2, -TankSize / 2));
+            e.Graphics.DrawImage(tankBodies[t.ID % tankBodies.Length], new Point(-TankSize / 2, -TankSize / 2));
         }
 
         /// <summary>
@@ -179,7 +179,7 @@ namespace TankWars
         private void TurretDrawer(object o, PaintEventArgs e)
         {
             Tank t = o as Tank;
-            e.Graphics.DrawImage(TankTurrets[t.ID % TankBodies.Length], new Point(-TurretSize / 2, -TurretSize / 2));
+            e.Graphics.DrawImage(tankTurrets[t.ID % tankBodies.Length], new Point(-TurretSize / 2, -TurretSize / 2));
         }
 
 
@@ -193,7 +193,7 @@ namespace TankWars
         private void PowerupDrawer(object o, PaintEventArgs e)
         {
             Powerup p = o as Powerup;
-            e.Graphics.DrawImage(PowerUpImage, new Point(-PowerupSize / 2, -PowerupSize / 2));
+            e.Graphics.DrawImage(powerUpImage, new Point(-PowerupSize / 2, -PowerupSize / 2));
         }
 
         private void WallDrawer(object o, PaintEventArgs e)
@@ -204,14 +204,14 @@ namespace TankWars
         private void ProjectileDrawer(object o, PaintEventArgs e)
         {
             Projectile p = o as Projectile;
-            Image texture = Projectiles[p.owner % Projectiles.Length];
+            Image texture = projectiles[p.owner % projectiles.Length];
             e.Graphics.DrawImage(texture, new Point(-ProjectileSize / 2, -ProjectileSize / 2));
         }
 
         private void ExplosionDrawer(object o, PaintEventArgs e)
         {
             Tank t = o as Tank;
-            e.Graphics.DrawImage(Explosion[explosionCounter[t.ID]++ % (Explosion.Length - 1)], new Point(-TankSize / 2, -TankSize / 2));
+            e.Graphics.DrawImage(explosion[explosionCounter[t.ID]++ % (explosion.Length - 1)], new Point(-TankSize / 2, -TankSize / 2));
 
         }
 
@@ -224,7 +224,7 @@ namespace TankWars
         private void BeamDrawer(object o, PaintEventArgs e)
         {
             Beam b = o as Beam;
-            using (SolidBrush rainbowBrush = new SolidBrush(ChooseColor(BeamCounter[b.id]++)))
+            using (SolidBrush rainbowBrush = new SolidBrush(ChooseColor(beamCounter[b.id]++)))
             {
 
                 e.Graphics.FillRectangle(rainbowBrush, new Rectangle(0, 0, 2, theWorld.GetWorldSize()));
@@ -240,10 +240,10 @@ namespace TankWars
         private void SupportBeamDrawer(object o, PaintEventArgs e)
         {
             Beam b = o as Beam;
-            using (SolidBrush rainbowBrush = new SolidBrush(ChooseColor(BeamCounter[b.id])))
+            using (SolidBrush rainbowBrush = new SolidBrush(ChooseColor(beamCounter[b.id])))
             {
 
-                e.Graphics.FillRectangle(rainbowBrush, new Rectangle(0, 0, 2, 60 - BeamCounter[b.id]));
+                e.Graphics.FillRectangle(rainbowBrush, new Rectangle(0, 0, 2, 60 - beamCounter[b.id]));
             }
             ;
         }
@@ -273,8 +273,8 @@ namespace TankWars
                 // Draw the players
                 foreach (Tank t in theWorld.GetTanks().Values)
                 {
-                    PlayObjDist = t.location - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
-                    if (Math.Abs(PlayObjDist.GetX()) < 900 && (Math.Abs(PlayObjDist.GetY()) < 900))
+                    playObjDist = t.location - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
+                    if (Math.Abs(playObjDist.GetX()) < 900 && (Math.Abs(playObjDist.GetY()) < 900))
                     {
                         if (t.hp > 0)
                         {
@@ -298,8 +298,8 @@ namespace TankWars
                 // Draw the powerups
                 foreach (Powerup pow in theWorld.GetPowerups().Values)
                 {
-                    PlayObjDist = pow.loc - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
-                    if (Math.Abs(PlayObjDist.GetX()) < 900 && (Math.Abs(PlayObjDist.GetY()) < 900))
+                    playObjDist = pow.loc - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
+                    if (Math.Abs(playObjDist.GetX()) < 900 && (Math.Abs(playObjDist.GetY()) < 900))
                         DrawObjectWithTransform(e, pow, pow.loc.GetX(), pow.loc.GetY(), 0, PowerupDrawer);
                 }
 
@@ -345,15 +345,15 @@ namespace TankWars
 
                 foreach (Projectile p in theWorld.GetProjectiles().Values)
                 {
-                    PlayObjDist = p.loc - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
-                    if (Math.Abs(PlayObjDist.GetX()) < 900 && (Math.Abs(PlayObjDist.GetY()) < 900))
+                    playObjDist = p.loc - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
+                    if (Math.Abs(playObjDist.GetX()) < 900 && (Math.Abs(playObjDist.GetY()) < 900))
                         DrawObjectWithTransform(e, p, p.loc.GetX(), p.loc.GetY(), p.dir.ToAngle(), ProjectileDrawer);
 
                 }
 
                 foreach (Beam b in theWorld.GetBeams().Values)
                 {
-                    if (BeamCounter[b.id] <= 60)
+                    if (beamCounter[b.id] <= 60)
                     {
 
                         DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), b.dir.ToAngle() - 180, BeamDrawer);
@@ -379,17 +379,17 @@ namespace TankWars
         private Color ChooseColor(int counter)
         {
             if (counter < 10)
-                return Colors[0];
+                return colors[0];
             else if (counter < 20)
-                return Colors[1];
+                return colors[1];
             else if (counter < 30)
-                return Colors[2];
+                return colors[2];
             else if (counter < 40)
-                return Colors[3];
+                return colors[3];
             else if (counter < 50)
-                return Colors[4];
+                return colors[4];
             else
-                return Colors[5];
+                return colors[5];
         }
 
         /// <summary>
@@ -408,7 +408,7 @@ namespace TankWars
         /// <returns></returns>
         public Dictionary<int, int> GetBeamCounter()
         {
-            return BeamCounter;
+            return beamCounter;
         }
 
         /// <summary>
@@ -416,43 +416,43 @@ namespace TankWars
         /// </summary>
         private void LoadTanks()
         {
-            TankBodies[0] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\BlueTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[0] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\BlueTurret.png"), new Size(TurretSize, TurretSize));
+            tankBodies[0] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\BlueTank.png"), new Size(TankSize, TankSize));
+            tankTurrets[0] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\BlueTurret.png"), new Size(TurretSize, TurretSize));
 
-            TankBodies[1] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\DarkTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[1] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\DarkTurret.png"), new Size(TurretSize, TurretSize));
+            tankBodies[1] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\DarkTank.png"), new Size(TankSize, TankSize));
+            tankTurrets[1] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\DarkTurret.png"), new Size(TurretSize, TurretSize));
 
-            TankBodies[2] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\GreenTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[2] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\GreenTurret.png"), new Size(TurretSize, TurretSize));
+            tankBodies[2] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\GreenTank.png"), new Size(TankSize, TankSize));
+            tankTurrets[2] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\GreenTurret.png"), new Size(TurretSize, TurretSize));
 
-            TankBodies[3] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\LightGreenTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[3] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\LightGreenTurret.png"), new Size(TurretSize, TurretSize));
+            tankBodies[3] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\LightGreenTank.png"), new Size(TankSize, TankSize));
+            tankTurrets[3] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\LightGreenTurret.png"), new Size(TurretSize, TurretSize));
 
-            TankBodies[4] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\OrangeTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[4] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\OrangeTurret.png"), new Size(TurretSize, TurretSize));
+            tankBodies[4] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\OrangeTank.png"), new Size(TankSize, TankSize));
+            tankTurrets[4] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\OrangeTurret.png"), new Size(TurretSize, TurretSize));
 
-            TankBodies[5] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\PurpleTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[5] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\PurpleTurret.png"), new Size(TurretSize, TurretSize));
+            tankBodies[5] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\PurpleTank.png"), new Size(TankSize, TankSize));
+            tankTurrets[5] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\PurpleTurret.png"), new Size(TurretSize, TurretSize));
 
-            TankBodies[6] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\RedTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[6] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\RedTurret.png"), new Size(TurretSize, TurretSize));
+            tankBodies[6] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\RedTank.png"), new Size(TankSize, TankSize));
+            tankTurrets[6] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\RedTurret.png"), new Size(TurretSize, TurretSize));
 
-            TankBodies[7] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\YellowTank.png"), new Size(TankSize, TankSize));
-            TankTurrets[7] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\YellowTurret.png"), new Size(TurretSize, TurretSize));
+            tankBodies[7] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\YellowTank.png"), new Size(TankSize, TankSize));
+            tankTurrets[7] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\YellowTurret.png"), new Size(TurretSize, TurretSize));
 
-            Projectiles[0] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-blue.png"), new Size(ProjectileSize, ProjectileSize));
-            Projectiles[1] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-brown.png"), new Size(ProjectileSize, ProjectileSize));
-            Projectiles[2] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-green.png"), new Size(ProjectileSize, ProjectileSize));
-            Projectiles[3] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-grey.png"), new Size(ProjectileSize, ProjectileSize));
-            Projectiles[4] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-red.png"), new Size(ProjectileSize, ProjectileSize));
-            Projectiles[5] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-violet.png"), new Size(ProjectileSize, ProjectileSize));
-            Projectiles[6] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-white.png"), new Size(ProjectileSize, ProjectileSize));
-            Projectiles[7] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-yellow.png"), new Size(ProjectileSize, ProjectileSize));
+            projectiles[0] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-blue.png"), new Size(ProjectileSize, ProjectileSize));
+            projectiles[1] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-brown.png"), new Size(ProjectileSize, ProjectileSize));
+            projectiles[2] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-green.png"), new Size(ProjectileSize, ProjectileSize));
+            projectiles[3] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-grey.png"), new Size(ProjectileSize, ProjectileSize));
+            projectiles[4] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-red.png"), new Size(ProjectileSize, ProjectileSize));
+            projectiles[5] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-violet.png"), new Size(ProjectileSize, ProjectileSize));
+            projectiles[6] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-white.png"), new Size(ProjectileSize, ProjectileSize));
+            projectiles[7] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-yellow.png"), new Size(ProjectileSize, ProjectileSize));
 
 
-            for (int i = 0; i < Explosion.Length; i++)
+            for (int i = 0; i < explosion.Length; i++)
             {
-                Explosion[i] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\frame_" + i + "_delay-0.03s.png"), new Size(TankSize, TankSize));
+                explosion[i] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\frame_" + i + "_delay-0.03s.png"), new Size(TankSize, TankSize));
             }
 
         }
@@ -462,12 +462,12 @@ namespace TankWars
         /// </summary>
         private void FillColors()
         {
-            Colors[0] = Color.Red;
-            Colors[1] = Color.Orange;
-            Colors[2] = Color.Yellow;
-            Colors[3] = Color.Green;
-            Colors[4] = Color.Blue;
-            Colors[5] = Color.Purple;
+            colors[0] = Color.Red;
+            colors[1] = Color.Orange;
+            colors[2] = Color.Yellow;
+            colors[3] = Color.Green;
+            colors[4] = Color.Blue;
+            colors[5] = Color.Purple;
         }
 
 
