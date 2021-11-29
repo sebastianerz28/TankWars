@@ -10,13 +10,13 @@ namespace GameModel
     [JsonObject]
     public class ControlCmd
     {
-        [JsonProperty]
-        public string moving { get; set; }
+        [JsonProperty(PropertyName = "moving")]
+        public string Moving { get; set; }
 
-        [JsonProperty]
-        public string fire { get; set; }
+        [JsonProperty(PropertyName = "fire")]
+        public string Fire { get; set; }
 
-        [JsonProperty]
-        public Vector2D tdir { get; set; }
+        [JsonProperty(PropertyName = "tdir")]
+        public Vector2D Tdir { get; set; }
     }
 }

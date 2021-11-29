@@ -7,93 +7,21 @@ namespace GameModel
 {
     public class World
     {
-        private Dictionary<int, Wall> walls = new Dictionary<int, Wall>();
-        private Dictionary<int, Tank> tanks = new Dictionary<int, Tank>();
-        private Dictionary<int, Projectile> projectiles = new Dictionary<int, Projectile>();
-        private Dictionary<int, Beam> beams = new Dictionary<int, Beam>();
-        private Dictionary<int, Powerup> powerups = new Dictionary<int, Powerup>();
-        private int playerID;
-        private int worldSize;
+        public Dictionary<int, Wall> Walls { get; private set; }
+        public Dictionary<int, Tank> Tanks { get; private set; }
+        public Dictionary<int, Projectile> Projectiles { get; private set; }
+        public Dictionary<int, Beam> Beams { get; private set; }
+        public Dictionary<int, Powerup> Powerups { get; private set; }
+        public int PlayerID { get; set; }
+        public int WorldSize { get; set; }
 
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<int, Wall> GetWalls()
+        public World()
         {
-            return walls;
-        }
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<int, Tank> GetTanks()
-        {
-            return tanks;
-        }
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<int, Projectile> GetProjectiles()
-        {
-            return projectiles;
-        }
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<int, Beam> GetBeams()
-        {
-            return beams;
-        }
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<int, Powerup> GetPowerups()
-        {
-            return powerups;
-        }
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <returns></returns>
-        public int GetPlayerId()
-        {
-            return playerID;
-        }
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <param name="id"></param>
-        public void SetPlayerID(int id)
-        {
-            playerID = id;
-        }
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <returns></returns>
-        public int GetWorldSize()
-        {
-            return worldSize;
-        }
-
-        /// <summary>
-        /// TODO
-        /// </summary>
-        /// <param name="size"></param>
-        public void SetWorldSize(int size)
-        {
-            worldSize = size;
+            Tanks = new Dictionary<int, Tank>();
+            Walls = new Dictionary<int, Wall>();
+            Projectiles = new Dictionary<int, Projectile>();
+            Beams = new Dictionary<int, Beam>();
+            Powerups = new Dictionary<int, Powerup>();
         }
     }
 }

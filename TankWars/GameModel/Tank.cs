@@ -15,42 +15,42 @@ namespace GameModel
         public int ID { get; private set; }
 
         [JsonProperty(PropertyName = "loc")]
-        public Vector2D location { get; private set; }
+        public Vector2D Location { get; private set; }
 
         [JsonProperty(PropertyName = "bdir")]
-        public Vector2D orientation { get; private set; }
+        public Vector2D Orientation { get; private set; }
 
         [JsonProperty(PropertyName = "tdir")]
-        public Vector2D aiming { get; private set; }
+        public Vector2D Aiming { get; private set; }
 
-        [JsonProperty]
-        public string name { get; private set; }
+        [JsonProperty(PropertyName = "name")]
+        public string Name { get; private set; }
 
-        [JsonProperty]
-        public int hp { get; private set; }
+        [JsonProperty(PropertyName = "hp")]
+        public int HP { get; private set; }
 
-        [JsonProperty]
-        public int score { get; private set; }
+        [JsonProperty(PropertyName = "score")]
+        public int Score { get; private set; }
 
-        [JsonProperty]
-        public bool died { get; private set; }
+        [JsonProperty(PropertyName = "died")]
+        public bool Died { get; private set; }
 
         [JsonProperty(PropertyName = "dc")]
-        public bool disconnected { get; private set; }
+        public bool Disconnected { get; private set; }
 
         [JsonProperty(PropertyName = "join")]
-        public bool joined { get; private set; }
+        public bool Joined { get; private set; }
 
         /// <summary>
-        /// Default constructor for JSON serialization
+        /// Default Tank constructor
         /// </summary>
         public Tank()
         {
-            aiming = new Vector2D(0,-1);
-            score = 0;
-            died = false;
-            disconnected = false;
-            joined = false;
+            Aiming = new Vector2D(0,-1);
+            Score = 0;
+            Died = false;
+            Disconnected = false;
+            Joined = false;
         }
     }  
 }

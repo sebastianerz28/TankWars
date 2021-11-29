@@ -34,14 +34,17 @@ namespace TankWars
         private Dictionary<int, int> beamCounter;
         private Vector2D playObjDist;
 
-
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="w"></param>
         public DrawingPanel(World w)
         {
 
             playObjDist = new Vector2D();
             DoubleBuffered = true;
             theWorld = w;
-            background = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\Background.png"), new Size(theWorld.GetWorldSize(), theWorld.GetWorldSize()));
+            background = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\Background.png"), new Size(theWorld.WorldSize, theWorld.WorldSize));
             wallImage = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\WallSprite.png"), new Size(WallSize, WallSize));
             powerUpImage = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\ChugJug.png"), new Size(PowerupSize, PowerupSize));
             explosionCounter = new Dictionary<int, int>();
@@ -72,7 +75,7 @@ namespace TankWars
         /// <param name="worldX">The X coordinate of the object in world space</param>
         /// <param name="worldY">The Y coordinate of the object in world space</param>
         /// <param name="angle">The orientation of the objec, measured in degrees clockwise from "up"</param>
-        /// <param name="drawer">The drawer delegate. After the transformation is applied, the delegate is invoked to draw whatever it wants</param>
+        /// <param name="drawer">The drawingPanel delegate. After the transformation is applied, the delegate is invoked to draw whatever it wants</param>
         private void DrawObjectWithTransform(PaintEventArgs e, object o, double worldX, double worldY, double angle, ObjectDrawer drawer)
         {
             // "push" the current transform
@@ -110,9 +113,9 @@ namespace TankWars
             Tank t = o as Tank;
 
             StringBuilder nameAndScore = new StringBuilder();
-            nameAndScore.Append(t.name);
+            nameAndScore.Append(t.Name);
             nameAndScore.Append(": ");
-            nameAndScore.Append(t.score);
+            nameAndScore.Append(t.Score);
 
             using (SolidBrush whiteBrush = new SolidBrush(Color.White))
             using (Font bigFont = new Font(SystemFonts.DefaultFont.FontFamily, 14, FontStyle.Regular))
@@ -132,7 +135,7 @@ namespace TankWars
         {
             Tank t = o as Tank;
 
-            int tankHealth = t.hp;
+            int tankHealth = t.HP;
 
             int leftSize = (int)(TankSize * ((double)tankHealth / 3));
             int rightSize = TankSize - leftSize;
@@ -204,7 +207,7 @@ namespace TankWars
         private void ProjectileDrawer(object o, PaintEventArgs e)
         {
             Projectile p = o as Projectile;
-            Image texture = projectiles[p.owner % projectiles.Length];
+            Image texture = projectiles[p.Owner % projectiles.Length];
             e.Graphics.DrawImage(texture, new Point(-ProjectileSize / 2, -ProjectileSize / 2));
         }
 
@@ -224,10 +227,10 @@ namespace TankWars
         private void BeamDrawer(object o, PaintEventArgs e)
         {
             Beam b = o as Beam;
-            using (SolidBrush rainbowBrush = new SolidBrush(ChooseColor(beamCounter[b.id]++)))
+            using (SolidBrush rainbowBrush = new SolidBrush(ChooseColor(beamCounter[b.ID]++)))
             {
 
-                e.Graphics.FillRectangle(rainbowBrush, new Rectangle(0, 0, 2, theWorld.GetWorldSize()));
+                e.Graphics.FillRectangle(rainbowBrush, new Rectangle(0, 0, 2, theWorld.WorldSize));
             }
             ;
         }
@@ -240,10 +243,10 @@ namespace TankWars
         private void SupportBeamDrawer(object o, PaintEventArgs e)
         {
             Beam b = o as Beam;
-            using (SolidBrush rainbowBrush = new SolidBrush(ChooseColor(beamCounter[b.id])))
+            using (SolidBrush rainbowBrush = new SolidBrush(ChooseColor(beamCounter[b.ID])))
             {
 
-                e.Graphics.FillRectangle(rainbowBrush, new Rectangle(0, 0, 2, 60 - beamCounter[b.id]));
+                e.Graphics.FillRectangle(rainbowBrush, new Rectangle(0, 0, 2, 60 - beamCounter[b.ID]));
             }
             ;
         }
@@ -259,57 +262,57 @@ namespace TankWars
             lock (theWorld)
             {
                 int viewSize = Size.Width; // view is square, so we can just use width
-                if (theWorld.GetTanks().TryGetValue(theWorld.GetPlayerId(), out Tank tank))
+                if (theWorld.Tanks.TryGetValue(theWorld.PlayerID, out Tank tank))
                 {
-                    double playerX = tank.location.GetX();
-                    double playerY = tank.location.GetY();
+                    double playerX = tank.Location.GetX();
+                    double playerY = tank.Location.GetY();
                     e.Graphics.TranslateTransform((float)(-playerX + (viewSize / 2)), (float)(-playerY + (viewSize / 2)));
 
-                    int backgroundX = -theWorld.GetWorldSize() / 2;
-                    int backgroundY = -theWorld.GetWorldSize() / 2;
+                    int backgroundX = -theWorld.WorldSize / 2;
+                    int backgroundY = -theWorld.WorldSize / 2;
                     e.Graphics.DrawImage(background, new Point(backgroundX, backgroundY));
                 }
 
                 // Draw the players
-                foreach (Tank t in theWorld.GetTanks().Values)
+                foreach (Tank t in theWorld.Tanks.Values)
                 {
-                    playObjDist = t.location - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
+                    playObjDist = t.Location - theWorld.Tanks[theWorld.PlayerID].Location;
                     if (Math.Abs(playObjDist.GetX()) < 900 && (Math.Abs(playObjDist.GetY()) < 900))
                     {
-                        if (t.hp > 0)
+                        if (t.HP > 0)
                         {
 
-                            DrawObjectWithTransform(e, t, t.location.GetX(), t.location.GetY(), t.orientation.ToAngle(), TankDrawer);
-                            DrawObjectWithTransform(e, t, t.location.GetX(), t.location.GetY(), t.aiming.ToAngle(), TurretDrawer);
-                            DrawObjectWithTransform(e, t, t.location.GetX(), t.location.GetY() + 5, 0, NameDrawer);
-                            DrawObjectWithTransform(e, t, t.location.GetX(), t.location.GetY() - 10, 0, HealthbarDrawer);
+                            DrawObjectWithTransform(e, t, t.Location.GetX(), t.Location.GetY(), t.Orientation.ToAngle(), TankDrawer);
+                            DrawObjectWithTransform(e, t, t.Location.GetX(), t.Location.GetY(), t.Aiming.ToAngle(), TurretDrawer);
+                            DrawObjectWithTransform(e, t, t.Location.GetX(), t.Location.GetY() + 5, 0, NameDrawer);
+                            DrawObjectWithTransform(e, t, t.Location.GetX(), t.Location.GetY() - 10, 0, HealthbarDrawer);
                         }
 
-                        else if (t.died || t.hp == 0)
+                        else if (t.Died || t.HP == 0)
                         {
                             if (explosionCounter.ContainsKey(t.ID))
                             {
-                                DrawObjectWithTransform(e, t, t.location.GetX(), t.location.GetY(), 0, ExplosionDrawer);
+                                DrawObjectWithTransform(e, t, t.Location.GetX(), t.Location.GetY(), 0, ExplosionDrawer);
                             }
                         }
                     }
                 }
 
                 // Draw the powerups
-                foreach (Powerup pow in theWorld.GetPowerups().Values)
+                foreach (Powerup pow in theWorld.Powerups.Values)
                 {
-                    playObjDist = pow.loc - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
+                    playObjDist = pow.Location - theWorld.Tanks[theWorld.PlayerID].Location;
                     if (Math.Abs(playObjDist.GetX()) < 900 && (Math.Abs(playObjDist.GetY()) < 900))
-                        DrawObjectWithTransform(e, pow, pow.loc.GetX(), pow.loc.GetY(), 0, PowerupDrawer);
+                        DrawObjectWithTransform(e, pow, pow.Location.GetX(), pow.Location.GetY(), 0, PowerupDrawer);
                 }
 
-                foreach (Wall wall in theWorld.GetWalls().Values)
+                foreach (Wall wall in theWorld.Walls.Values)
                 {
 
-                    int distX = (int)((wall.p1.GetX() - wall.p2.GetX()) / WallSize);
-                    int distY = (int)((wall.p1.GetY() - wall.p2.GetY()) / WallSize);
-                    int p2X = (int)wall.p2.GetX();
-                    int p2Y = (int)wall.p2.GetY();
+                    int distX = (int)((wall.P1.GetX() - wall.P2.GetX()) / WallSize);
+                    int distY = (int)((wall.P1.GetY() - wall.P2.GetY()) / WallSize);
+                    int p2X = (int)wall.P2.GetX();
+                    int p2Y = (int)wall.P2.GetY();
 
                     for (int i = 0; i <= Math.Abs(distX == 0 ? distY : distX); i++)
                     {
@@ -343,26 +346,26 @@ namespace TankWars
 
                 }
 
-                foreach (Projectile p in theWorld.GetProjectiles().Values)
+                foreach (Projectile p in theWorld.Projectiles.Values)
                 {
-                    playObjDist = p.loc - theWorld.GetTanks()[theWorld.GetPlayerId()].location;
+                    playObjDist = p.Location - theWorld.Tanks[theWorld.PlayerID].Location;
                     if (Math.Abs(playObjDist.GetX()) < 900 && (Math.Abs(playObjDist.GetY()) < 900))
-                        DrawObjectWithTransform(e, p, p.loc.GetX(), p.loc.GetY(), p.dir.ToAngle(), ProjectileDrawer);
+                        DrawObjectWithTransform(e, p, p.Location.GetX(), p.Location.GetY(), p.Direction.ToAngle(), ProjectileDrawer);
 
                 }
 
-                foreach (Beam b in theWorld.GetBeams().Values)
+                foreach (Beam b in theWorld.Beams.Values)
                 {
-                    if (beamCounter[b.id] <= 60)
+                    if (beamCounter[b.ID] <= 60)
                     {
 
-                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), b.dir.ToAngle() - 180, BeamDrawer);
-                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), (b.dir.ToAngle() - 180) + 30, SupportBeamDrawer);
-                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), (b.dir.ToAngle() - 180) - 30, SupportBeamDrawer);
-                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), (b.dir.ToAngle() - 180) + 20, SupportBeamDrawer);
-                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), (b.dir.ToAngle() - 180) - 20, SupportBeamDrawer);
-                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), (b.dir.ToAngle() - 180) + 10, SupportBeamDrawer);
-                        DrawObjectWithTransform(e, b, b.org.GetX(), b.org.GetY(), (b.dir.ToAngle() - 180) - 10, SupportBeamDrawer);
+                        DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), b.Direction.ToAngle() - 180, BeamDrawer);
+                        DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) + 30, SupportBeamDrawer);
+                        DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) - 30, SupportBeamDrawer);
+                        DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) + 20, SupportBeamDrawer);
+                        DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) - 20, SupportBeamDrawer);
+                        DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) + 10, SupportBeamDrawer);
+                        DrawObjectWithTransform(e, b, b.Origin.GetX(), b.Origin.GetY(), (b.Direction.ToAngle() - 180) - 10, SupportBeamDrawer);
 
                     }
                 }

@@ -44,8 +44,8 @@ namespace GameController
         {
             controlCmd = new ControlCmd();
             world = new World();
-            controlCmd.moving = "none";
-            controlCmd.fire = "none";
+            controlCmd.Moving = "none";
+            controlCmd.Fire = "none";
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace GameController
                 {
                     if (int.TryParse(parts[0], out id))
                     {
-                        world.SetPlayerID(id);
+                        world.PlayerID = id;
                     }
                     else
                     {
@@ -111,7 +111,7 @@ namespace GameController
                     }
                     if (int.TryParse(parts[1], out int worldSize))
                     {
-                        world.SetWorldSize(worldSize);
+                        world.WorldSize = worldSize;
                     }
                     else
                     {
@@ -160,13 +160,13 @@ namespace GameController
                     if (token != null)
                     {
                         Wall w = JsonConvert.DeserializeObject<Wall>(s);
-                        if (world.GetWalls().ContainsKey(w.id))
+                        if (world.Walls.ContainsKey(w.ID))
                         {
-                            world.GetWalls()[w.id] = w;
+                            world.Walls[w.ID] = w;
                         }
                         else
                         {
-                            world.GetWalls().Add(w.id, w);
+                            world.Walls.Add(w.ID, w);
                         }
                         state.RemoveData(0, s.Length);
                         continue;
@@ -239,17 +239,17 @@ namespace GameController
                     if (token != null)
                     {
                         Tank tank = JsonConvert.DeserializeObject<Tank>(s);
-                        if (world.GetTanks().ContainsKey(tank.ID))
+                        if (world.Tanks.ContainsKey(tank.ID))
                         {
-                            if (tank.disconnected)
+                            if (tank.Disconnected)
                             {
-                                world.GetTanks().Remove(tank.ID);
+                                world.Tanks.Remove(tank.ID);
                                 RemoveTankExplosionCount(tank.ID);
                             }
                             else
                             {
-                                world.GetTanks()[tank.ID] = tank;
-                                if (tank.died)
+                                world.Tanks[tank.ID] = tank;
+                                if (tank.Died)
                                 {
                                     SetExplosionCounter(tank.ID);
                                 }
@@ -258,7 +258,7 @@ namespace GameController
                         else
                         {
                             SetExplosionCounter(tank.ID);
-                            world.GetTanks().Add(tank.ID, tank);
+                            world.Tanks.Add(tank.ID, tank);
                         }
                         state.RemoveData(0, s.Length);
                         continue;
@@ -268,19 +268,19 @@ namespace GameController
                     if (token != null)
                     {
                         Projectile proj = JsonConvert.DeserializeObject<Projectile>(s);
-                        if (world.GetProjectiles().ContainsKey(proj.id))
+                        if (world.Projectiles.ContainsKey(proj.ID))
                         {
-                            if (proj.died)
-                                world.GetProjectiles().Remove(proj.id);
+                            if (proj.Died)
+                                world.Projectiles.Remove(proj.ID);
                             else
                             {
-                                world.GetProjectiles()[proj.id] = proj;
+                                world.Projectiles[proj.ID] = proj;
                             }
                         }
                         else
                         {
-                            if (!proj.died)
-                                world.GetProjectiles().Add(proj.id, proj);
+                            if (!proj.Died)
+                                world.Projectiles.Add(proj.ID, proj);
                         }
                         state.RemoveData(0, s.Length);
                         continue;
@@ -291,15 +291,15 @@ namespace GameController
                     {
 
                         Beam beam = JsonConvert.DeserializeObject<Beam>(s);
-                        if (world.GetBeams().ContainsKey(beam.id))
+                        if (world.Beams.ContainsKey(beam.ID))
                         {
-                            world.GetBeams()[beam.id] = beam;
-                            SetBeamCounter(beam.id);
+                            world.Beams[beam.ID] = beam;
+                            SetBeamCounter(beam.ID);
                         }
                         else
                         {
-                            SetBeamCounter(beam.id);
-                            world.GetBeams().Add(beam.id, beam);
+                            SetBeamCounter(beam.ID);
+                            world.Beams.Add(beam.ID, beam);
                         }
                         state.RemoveData(0, s.Length);
                         continue;
@@ -309,21 +309,21 @@ namespace GameController
                     if (token != null)
                     {
                         Powerup powerup = JsonConvert.DeserializeObject<Powerup>(s);
-                        if (world.GetPowerups().ContainsKey(powerup.id))
+                        if (world.Powerups.ContainsKey(powerup.ID))
                         {
-                            if (powerup.died)
+                            if (powerup.Died)
                             {
-                                world.GetPowerups().Remove(powerup.id);
+                                world.Powerups.Remove(powerup.ID);
                             }
                             else
                             {
-                                world.GetPowerups()[powerup.id] = powerup;
+                                world.Powerups[powerup.ID] = powerup;
                             }
                         }
                         else
                         {
-                            if (!powerup.died)
-                                world.GetPowerups().Add(powerup.id, powerup);
+                            if (!powerup.Died)
+                                world.Powerups.Add(powerup.ID, powerup);
                         }
                         state.RemoveData(0, s.Length);
                         continue;
@@ -335,7 +335,7 @@ namespace GameController
             // Notify any listeners (the view) that a new game world has arrived from the server if UpdateArrived is not null
             UpdateArrived?.Invoke();
 
-            if (controlCmd.tdir != null)
+            if (controlCmd.Tdir != null)
             {
                 jsonString = JsonConvert.SerializeObject(controlCmd) + "\n";
                 Networking.Send(state.TheSocket, jsonString);
@@ -352,8 +352,8 @@ namespace GameController
         {
             lock (controlCmd)
             {
-                controlCmd.tdir = new Vector2D(mousePosition.X - (viewSize / 2.0), mousePosition.Y - (viewSize / 2.0));
-                controlCmd.tdir.Normalize();
+                controlCmd.Tdir = new Vector2D(mousePosition.X - (viewSize / 2.0), mousePosition.Y - (viewSize / 2.0));
+                controlCmd.Tdir.Normalize();
             }
         }
 
@@ -366,11 +366,11 @@ namespace GameController
         {
             if (e.Button == MouseButtons.Left)
             {
-                controlCmd.fire = "none";
+                controlCmd.Fire = "none";
             }
             else if (e.Button == MouseButtons.Right)
             {
-                controlCmd.fire = "none";
+                controlCmd.Fire = "none";
             }
         }
 
@@ -382,11 +382,11 @@ namespace GameController
         {
             if (e.Button == MouseButtons.Left)
             {
-                controlCmd.fire = "main";
+                controlCmd.Fire = "main";
             }
             else if (e.Button == MouseButtons.Right)
             {
-                controlCmd.fire = "alt";
+                controlCmd.Fire = "alt";
             }
         }
 
@@ -426,7 +426,7 @@ namespace GameController
             {
                 prevKeyPress = currentKeyPress;
                 currentKeyPress = direction;
-                controlCmd.moving = direction;
+                controlCmd.Moving = direction;
             }
         }
 
@@ -465,7 +465,7 @@ namespace GameController
             if (currentKeyPress == direction)
             {
                 currentKeyPress = prevKeyPress;
-                controlCmd.moving = prevKeyPress;
+                controlCmd.Moving = prevKeyPress;
                 prevKeyPress = "none";
             }
             else if (prevKeyPress == direction)

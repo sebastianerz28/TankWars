@@ -11,12 +11,12 @@ namespace GameModel
     public class Powerup
     {
         [JsonProperty(PropertyName = "power")]
-        public int id { get; private set; }
+        public int ID { get; private set; }
 
-        [JsonProperty]
-        public Vector2D loc { get; private set; }
+        [JsonProperty(PropertyName = "loc")]
+        public Vector2D Location { get; private set; }
 
-        [JsonProperty]
-        public bool died { get; private set; }
+        [JsonProperty(PropertyName = "died")]
+        public bool Died { get; private set; }
     }
 }

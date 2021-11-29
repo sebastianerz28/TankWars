@@ -10,15 +10,15 @@ namespace GameModel
     public class Beam
     {
         [JsonProperty(PropertyName = "beam")]
-        public int id { get; private set; }
+        public int ID { get; private set; }
 
         [JsonProperty(PropertyName = "org")]
-        public Vector2D org { get; private set; }
+        public Vector2D Origin { get; private set; }
 
         [JsonProperty(PropertyName = "dir")]
-        public Vector2D dir { get; private set; }
+        public Vector2D Direction { get; private set; }
 
         [JsonProperty(PropertyName = "owner")]
-        public int owner { get; private set; }
+        public int Owner { get; private set; }
     }
 }

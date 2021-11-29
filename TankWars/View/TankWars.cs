@@ -14,7 +14,7 @@ namespace View
     public partial class TankWars : Form
     {
         private Controller controller = new Controller();
-        private DrawingPanel drawer;
+        private DrawingPanel drawingPanel;
         private World world;
 
         private const int MenuSize = 60;
@@ -42,7 +42,7 @@ namespace View
         /// <param name="ID"></param>
         private void RemoveTankExplosionCount(int ID)
         {
-            drawer.GetExplosionCounter().Remove(ID);
+            drawingPanel.GetExplosionCounter().Remove(ID);
         }
         /// <summary>
         /// Manages the frame counter for drawing a tank explosion animation: Sets the frame counter for a specific id to 0. Triggered when a tank dies
@@ -50,49 +50,49 @@ namespace View
         /// <param name="ID"></param>
         private void SetExplosionCounter(int ID)
         {
-            if (drawer.GetExplosionCounter().TryGetValue(ID, out int counter))
+            if (drawingPanel.GetExplosionCounter().TryGetValue(ID, out int counter))
             {
                 counter = 0;
             }
             else
             {
-                drawer.GetExplosionCounter().Add(ID, 0);
+                drawingPanel.GetExplosionCounter().Add(ID, 0);
             }
         }
         /// <summary>
-        /// Initializes drawer passing in the work and setting up event handlers
+        /// Initializes drawingPanel passing in the work and setting up event handlers
         /// </summary>
         private void InitializeDrawer()
         {
-            // TODO: Lock world at this point?
-            // Place and add the drawing panel
-            drawer = new DrawingPanel(world);
-            drawer.Location = new Point(0, MenuSize);
-            drawer.Size = new Size(ViewSize, ViewSize);
-            MethodInvoker invoker = new MethodInvoker(() => this.Controls.Add(drawer));
+            // add the drawing panel
+            drawingPanel = new DrawingPanel(world);
+            drawingPanel.Location = new Point(0, MenuSize);
+            drawingPanel.Size = new Size(ViewSize, ViewSize);
+            MethodInvoker invoker = new MethodInvoker(() => this.Controls.Add(drawingPanel));
             this.Invoke(invoker);
 
-            drawer.MouseDown += HandleMouseDown;
-            drawer.MouseUp += HandleMouseUp;
-            drawer.MouseMove += HandleMouseMove;
+            drawingPanel.MouseDown += HandleMouseDown;
+            drawingPanel.MouseUp += HandleMouseUp;
+            drawingPanel.MouseMove += HandleMouseMove;
 
             controller.RemoveTankExplosionCount += RemoveTankExplosionCount;
             controller.SetExplosionCounter += SetExplosionCounter;
             controller.SetBeamCounter += SetBeamCounter;
         }
+
         /// <summary>
         /// Manages the frame counter for drawing a beam animation: Sets the frame counter for a specific beam id to 0
         /// </summary>
         /// <param name="id"></param>
         private void SetBeamCounter(int id)
         {
-            if (drawer.GetBeamCounter().TryGetValue(id, out int counter))
+            if (drawingPanel.GetBeamCounter().TryGetValue(id, out int counter))
             {
                 counter = 0;
             }
             else
             {
-                drawer.GetBeamCounter().Add(id, 0);
+                drawingPanel.GetBeamCounter().Add(id, 0);
             }
 
         }
@@ -104,7 +104,7 @@ namespace View
         private void HandleMouseMove(object sender, EventArgs e)
         {
 
-            controller.HandleMouseMove(drawer.PointToClient(Cursor.Position), ViewSize);
+            controller.HandleMouseMove(drawingPanel.PointToClient(Cursor.Position), ViewSize);
         }
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace View
         {
             if (IPTextBox.Text == "" || playerNameTextBox.Text == "")
             {
-                MessageBox.Show("IP or player name cannot be blank");
+                MessageBox.Show("Address or player name cannot be blank");
                 return;
             }
             connectButton.Enabled = false;
