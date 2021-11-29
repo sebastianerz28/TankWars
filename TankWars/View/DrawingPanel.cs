@@ -482,19 +482,15 @@ namespace TankWars
             projectiles[5] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-violet.png"), new Size(ProjectileSize, ProjectileSize));
             projectiles[6] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-white.png"), new Size(ProjectileSize, ProjectileSize));
             projectiles[7] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\shot-yellow.png"), new Size(ProjectileSize, ProjectileSize));
-
-
             for (int i = 0; i < explosion.Length; i++)
             {
-                explosion[i] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\frame_" + i + "_delay-0.03s.png"), new Size(TankSize, TankSize));
+                explosion[i] = new Bitmap(Image.FromFile(@"..\..\..\Resources\Images\frame_" + i + ".png"), new Size(TankSize, TankSize));
             }
-
         }
 
         /// <summary>
         /// Sets the elements in each unique index of the colors array to a unique color of the rainbow
         /// </summary>
-        /// 
         private void FillColors()
         {
             colors[0] = Color.Red;
