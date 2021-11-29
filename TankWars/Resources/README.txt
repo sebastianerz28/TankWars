@@ -81,9 +81,10 @@ ADDED FEATURES:
 
 	Pressing the “ESC” key on the keyboard while in the game will terminate the application.
 
-	MenuStrip and clickable buttons for Controls and Additional Features
+
+	MenuStrip for Controls and Additional Features
 	
-	Shows a message box showing all controls for the game and briefly lists additional design changes/features
+	Shows a message box showing all controls for the game and briefly lists additional design changes/features.
 
 
 
