@@ -4,9 +4,9 @@ using System.Xml;
 using GameModel;
 using TankWars;
 
-namespace Server
+namespace TankWars
 {
-    class Server
+    public class Server
     {
         private int UniverseSize = -1;
         private int MSPerFrame = -1;
@@ -15,7 +15,7 @@ namespace Server
 
         private int wallCount = 0;
 
-        private World world = new World();
+        public World world = new World();
 
         static void Main(string[] args)
         {
@@ -46,7 +46,7 @@ namespace Server
 
         private void ReadSettingsXml()
         {
-            using (XmlReader reader = XmlReader.Create(@"..\..\..\Resources\settings.xml"))
+            using (XmlReader reader = XmlReader.Create(@"..\..\..\..\Resources\settings.xml"))
             {
                 while (reader.Read())
                 {
@@ -149,12 +149,12 @@ namespace Server
 
                         }
 
-                        if (double.TryParse(x1, out double x1Dub) && double.TryParse(x2, out double y1Dub))
+                        if (double.TryParse(x1, out double x1Dub) && double.TryParse(y1, out double y1Dub))
                         {
                             p1 = new Vector2D(x1Dub, y1Dub);
                         }
 
-                        if (double.TryParse(x2, out double x2Dub) && double.TryParse(x2, out double y2Dub))
+                        if (double.TryParse(x2, out double x2Dub) && double.TryParse(y2, out double y2Dub))
                         {
                             p2 = new Vector2D(x2Dub, y2Dub);
                         }
