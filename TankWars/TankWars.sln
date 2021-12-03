@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameModel", "GameModel\Game
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resources", "Resources\Resources.csproj", "{1F2EB78C-EF6B-42C5-93BB-391570469C9F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vector2D", "Vector2D\Vector2D.csproj", "{21B5E9AE-9405-4CB6-9E6C-E5F2A3648CE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vector2D", "Vector2D\Vector2D.csproj", "{21B5E9AE-9405-4CB6-9E6C-E5F2A3648CE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{BB529C9B-DAB2-4206-B74D-8BEB8EE0D2B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +40,10 @@ Global
 		{21B5E9AE-9405-4CB6-9E6C-E5F2A3648CE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21B5E9AE-9405-4CB6-9E6C-E5F2A3648CE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21B5E9AE-9405-4CB6-9E6C-E5F2A3648CE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB529C9B-DAB2-4206-B74D-8BEB8EE0D2B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB529C9B-DAB2-4206-B74D-8BEB8EE0D2B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB529C9B-DAB2-4206-B74D-8BEB8EE0D2B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB529C9B-DAB2-4206-B74D-8BEB8EE0D2B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
