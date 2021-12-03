@@ -109,6 +109,7 @@
     <Content Include="Images\YellowTurret.png" />
     <Content Include="Libraries\NetworkController.dll" />
     <Content Include="README.txt" />
+    <Content Include="settings.xml" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">

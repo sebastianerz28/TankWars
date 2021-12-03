@@ -22,5 +22,24 @@ namespace GameModel
 
         [JsonProperty(PropertyName = "p2")]
         public Vector2D P2 { get; private set; }
+
+        /// <summary>
+        /// Three parameter constructor
+        /// </summary>
+        /// <param name="ID">the ID of the wall</param>
+        /// <param name="p1">the initial endpoint of the Wall</param>
+        /// <param name="p2">the final endpoint of the Wall</param>
+        public Wall(int ID, Vector2D p1, Vector2D p2)
+        {
+            this.ID = ID;
+            P1 = p1;
+            P2 = p2;
+        }
+
+        /// <summary>
+        /// Default constructor for Json serialization
+        /// </summary>
+        public Wall()
+        { }
     }
 }
