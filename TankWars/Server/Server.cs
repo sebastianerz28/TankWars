@@ -1,7 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Net.Sockets;
 using System.Xml;
 using GameModel;
+using NetworkUtil;
+using Newtonsoft.Json;
 using TankWars;
 
 namespace TankWars
@@ -14,6 +17,8 @@ namespace TankWars
         private int RespawnRate = -1;
 
         private int wallCount = 0;
+        private int TankID = 0;
+        private Vector2D newTankLoc = new Vector2D(0,0);
 
         public World world = new World();
 
@@ -39,9 +44,56 @@ namespace TankWars
                 Console.WriteLine(e.Message);
                 return;
             }
+            TcpListener listener = Networking.StartServer(SetupMessageReceive, 11000);
+
+
+        }
+        private void SetupMessageReceive(SocketState state)
+        {
+            state.OnNetworkAction = CheckName;
+            Networking.GetData(state);
+        }
+
+        private void CheckName(SocketState state)
+        {
+            string s = state.GetData();
+            if (s.EndsWith('\n'))
+            {
+                //send worldsize and id and walls
+
+
+                Tank t = new Tank(TankID, newTankLoc, newTankLoc, s.Trim('\n'), newTankLoc, 0, false, false, true);
+                lock (world)
+                {
+                    world.Tanks.Add(TankID, t);
+                }
+                
+                Networking.Send(state.TheSocket, TankID++ + "\n" + UniverseSize + "\n");
+                state.OnNetworkAction = SendWalls;
+                state.OnNetworkAction(state);
+            }
+
+        }
+
+        private void SendWalls(SocketState state)
+        {
+            string jsonString = null;
+            foreach(Wall w in world.Walls.Values)
+            {
+                jsonString = JsonConvert.SerializeObject(w);
+                Networking.Send(state.TheSocket, jsonString);
+            }
+            state.OnNetworkAction = ReceiveControlCommands;
+            Networking.GetData(state);
+
+        }
+
+        private void ReceiveControlCommands(SocketState state)
+        {
 
 
 
+            Networking.GetData(state);
         }
 
         private void ReadSettingsXml()

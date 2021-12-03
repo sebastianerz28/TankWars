@@ -50,11 +50,20 @@ namespace GameModel
         /// </summary>
         public Tank()
         {
-            Aiming = new Vector2D(0,-1);
-            Score = 0;
+
+        }
+
+        public Tank(int id, Vector2D location, Vector2D orientation, string name, Vector2D aiming, int score, bool died, bool diconnected, bool joined)
+        {
+            ID = id;
+            Location = location;
+            Orientation = orientation;
+            Name = name;
+            Aiming = aiming;
+            Score = score;
             Died = false;
-            Disconnected = false;
-            Joined = false;
+            Disconnected = diconnected;
+            Joined = joined;
         }
     }  
 }
