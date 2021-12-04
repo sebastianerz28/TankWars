@@ -14,6 +14,7 @@ namespace GameModel
     [JsonObject(MemberSerialization.OptIn)]
     public class Tank
     {
+        private const int MaxHP = 3;
 
         [JsonProperty(PropertyName = "tank")]
         public int ID { get; private set; }
@@ -53,17 +54,18 @@ namespace GameModel
 
         }
 
-        public Tank(int id, Vector2D location, Vector2D orientation, string name, Vector2D aiming, int score, bool died, bool diconnected, bool joined)
+        public Tank(int id, Vector2D location, Vector2D orientation, string name, Vector2D aiming)
         {
             ID = id;
             Location = location;
             Orientation = orientation;
             Name = name;
             Aiming = aiming;
-            Score = score;
+            Score = 0;
             Died = false;
-            Disconnected = diconnected;
-            Joined = joined;
+            Disconnected = false;
+            Joined = true;
+            HP = MaxHP;
         }
     }
 }

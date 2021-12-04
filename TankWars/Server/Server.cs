@@ -18,6 +18,7 @@ namespace TankWars
     {
         private const int TankSpeed = 3;
         private const int ProjSpeed = 25;
+        private const int TankSize = 60;
 
         private int UniverseSize = -1;
         private int MSPerFrame = -1;
@@ -28,11 +29,13 @@ namespace TankWars
         private int tankID = 0;
         private int projectileID = 0;
         private int beamID = 0;
+        private int powerupID = 0;
+        private int powerupCounter = 0;
 
 
         private Vector2D newTankLoc = new Vector2D(0, 0);
 
-        private Dictionary<long, int> tankSockets;
+        private Dictionary<long, int> tankIDs;
         private Dictionary<int, Vector2D> tankVelocities;
         private Dictionary<long, Socket> sockets;
 
@@ -48,7 +51,7 @@ namespace TankWars
         }
         public Server()
         {
-            tankSockets = new Dictionary<long, int>();
+            tankIDs = new Dictionary<long, int>();
             tankVelocities = new Dictionary<int, Vector2D>();
             sockets = new Dictionary<long, Socket>();
         }
@@ -72,7 +75,6 @@ namespace TankWars
                 { }
                 watch.Restart();
                 UpdateWorld();
-                
             }
             
         }
@@ -81,16 +83,13 @@ namespace TankWars
         {
             lock (world)
             {
+                if (++powerupCounter > 300)
+                {
+                    world.Powerups.Add(powerupID, new Powerup(powerupID, ))
+                }
+
                 StringBuilder sb = new StringBuilder();
                 string jsonString = "";
-                foreach(Tank t in world.Tanks.Values)
-                {
-                    //TODO: Handle Collisions
-                    t.Location += tankVelocities[t.ID];
-                    jsonString = JsonConvert.SerializeObject(t);
-                    sb.Append(jsonString);
-                    sb.Append('\n');
-                }
 
                 foreach(Projectile p in world.Projectiles.Values)
                 {
@@ -105,11 +104,22 @@ namespace TankWars
 
                 foreach (Beam b in world.Beams.Values)
                 {
-                    //TODO: check if tank died
+                    foreach(Tank t in world.Tanks.Values)
+                    {
+                        if (Intersects(b.Origin, b.Direction, t.Location, TankSize / 2))
+                        {
+                            t.Died = true;
+                            t.HP = 0;
+                        }
+                    }
+
                     jsonString = JsonConvert.SerializeObject(b);
                     sb.Append(jsonString);
                     sb.Append('\n');
                 }
+
+                world.Beams.Clear();
+
                 foreach(Powerup pow in world.Powerups.Values)
                 {
                     //TODO: Check if tank picked up a powerup,
@@ -117,6 +127,16 @@ namespace TankWars
                     sb.Append(jsonString);
                     sb.Append('\n');
                 }
+
+                foreach (Tank t in world.Tanks.Values)
+                {
+                    //TODO: Handle Collisions
+                    t.Location += tankVelocities[t.ID];
+                    jsonString = JsonConvert.SerializeObject(t);
+                    sb.Append(jsonString);
+                    sb.Append('\n');
+                }
+
                 foreach (Socket socket in sockets.Values)
                 {
 
@@ -138,14 +158,17 @@ namespace TankWars
             string s = state.GetData();
             if (s.EndsWith('\n'))
             {
-                //send worldsize and id and walls
+                state.RemoveData(0, s.Length);
 
+                //send worldsize and id and walls
                 // TODO: change newTankLoc
 
-                Tank t = new Tank(tankID, newTankLoc, newTankLoc, s.Trim('\n'), newTankLoc, 0, false, false, true);
+                Console.WriteLine("Player " + tankID + " " + s + " joined.");
+
+                Tank t = new Tank(tankID, newTankLoc, newTankLoc, s.Trim('\n'), newTankLoc);
                 lock (world)
                 {
-                    tankSockets.Add(state.ID, tankID);
+                    tankIDs.Add(state.ID, tankID);
                     tankVelocities.Add(tankID, new Vector2D(0, 0));
                     world.Tanks.Add(tankID, t);
                     sockets.Add(state.ID, state.TheSocket);
@@ -173,6 +196,12 @@ namespace TankWars
 
         private void ReceiveControlCommands(SocketState state)
         {
+            if (state.ErrorOccurred)
+            {
+                Console.WriteLine("Cient " + tankIDs[state.ID] + " disconnected.");
+                return;
+            }
+
             string totalData = state.GetData();
             string[] parts = Regex.Split(totalData, @"(?<=[\n])");
             lock (world)
@@ -212,7 +241,7 @@ namespace TankWars
 
         private void HandleTdir(Vector2D tdir, long stateID)
         {
-            if (tankSockets.TryGetValue(stateID, out int tankID))
+            if (tankIDs.TryGetValue(stateID, out int tankID))
             {
                 world.Tanks[tankID].Aiming = tdir;
             }
@@ -220,7 +249,7 @@ namespace TankWars
 
         private void HandleFire(string fire, long stateID)
         {
-            if (tankSockets.TryGetValue(stateID, out int tankID))
+            if (tankIDs.TryGetValue(stateID, out int tankID))
             {
                 if (fire == "main")
                 {
@@ -238,7 +267,7 @@ namespace TankWars
 
         private void HandleMoving(string moving, long stateID)
         {
-            if (tankSockets.TryGetValue(stateID, out int tankID))
+            if (tankIDs.TryGetValue(stateID, out int tankID))
             {
                 switch (moving)
                 {
@@ -415,7 +444,63 @@ namespace TankWars
                 }
             }
         }
+
+
+        /// <summary>
+        /// Determines if a ray interescts a circle
+        /// </summary>
+        /// <param name="rayOrig">The origin of the ray</param>
+        /// <param name="rayDir">The direction of the ray</param>
+        /// <param name="center">The center of the circle</param>
+        /// <param name="r">The radius of the circle</param>
+        /// <returns></returns>
+        private static bool Intersects(Vector2D rayOrig, Vector2D rayDir, Vector2D center, double r)
+        {
+            // ray-circle intersection test
+            // P: hit point
+            // ray: P = O + tV
+            // circle: (P-C)dot(P-C)-r^2 = 0
+            // substituting to solve for t gives a quadratic equation:
+            // a = VdotV
+            // b = 2(O-C)dotV
+            // c = (O-C)dot(O-C)-r^2
+            // if the discriminant is negative, miss (no solution for P)
+            // otherwise, if both roots are positive, hit
+
+            double a = rayDir.Dot(rayDir);
+            double b = ((rayOrig - center) * 2.0).Dot(rayDir);
+            double c = (rayOrig - center).Dot(rayOrig - center) - r * r;
+
+            // discriminant
+            double disc = b * b - 4.0 * a * c;
+
+            if (disc < 0.0)
+                return false;
+
+            // find the signs of the roots
+            // technically we should also divide by 2a
+            // but all we care about is the sign, not the magnitude
+            double root1 = -b + Math.Sqrt(disc);
+            double root2 = -b - Math.Sqrt(disc);
+
+            return (root1 > 0.0 && root2 > 0.0);
+        }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <returns></returns>
+        private Vector2D RandomSpawnLocation()
+        {
+            Random rand = new Random();
+
+            double x = rand.Next(-UniverseSize / 2, UniverseSize / 2);
+            double y = rand.Next(-UniverseSize / 2, UniverseSize / 2);
+
+            // TODO: check for collisions
+
+            return new Vector2D(x, y);
+        }
+
     }
-
-
 }

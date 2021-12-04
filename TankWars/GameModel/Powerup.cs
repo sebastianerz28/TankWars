@@ -22,5 +22,24 @@ namespace GameModel
 
         [JsonProperty(PropertyName = "died")]
         public bool Died { get; private set; }
+    
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="location"></param>
+        public Powerup(int id, Vector2D location)
+        {
+            Died = false;
+        }
+
+        /// <summary>
+        /// Default contructor for Json serialization
+        /// </summary>
+        public Powerup()
+        {
+
+        }
     }
+
 }
