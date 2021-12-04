@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using GameModel;
@@ -15,6 +17,7 @@ namespace TankWars
     public class Server
     {
         private const int TankSpeed = 3;
+        private const int ProjSpeed = 25;
 
         private int UniverseSize = -1;
         private int MSPerFrame = -1;
@@ -26,12 +29,16 @@ namespace TankWars
         private int projectileID = 0;
         private int beamID = 0;
 
+
         private Vector2D newTankLoc = new Vector2D(0, 0);
 
         private Dictionary<long, int> tankSockets;
         private Dictionary<int, Vector2D> tankVelocities;
+        private Dictionary<long, Socket> sockets;
 
         public World world = new World();
+
+        private Stopwatch watch = new Stopwatch();
 
         static void Main(string[] args)
         {
@@ -43,6 +50,7 @@ namespace TankWars
         {
             tankSockets = new Dictionary<long, int>();
             tankVelocities = new Dictionary<int, Vector2D>();
+            sockets = new Dictionary<long, Socket>();
         }
 
         public void Run()
@@ -57,12 +65,71 @@ namespace TankWars
                 return;
             }
             TcpListener listener = Networking.StartServer(SetupMessageReceive, 11000);
-
-
+            watch.Start();
+            while (true)
+            {
+                while (watch.ElapsedMilliseconds < MSPerFrame)
+                { }
+                watch.Restart();
+                UpdateWorld();
+                
+            }
+            
         }
+
+        private void UpdateWorld()
+        {
+            lock (world)
+            {
+                StringBuilder sb = new StringBuilder();
+                string jsonString = "";
+                foreach(Tank t in world.Tanks.Values)
+                {
+                    //TODO: Handle Collisions
+                    t.Location += tankVelocities[t.ID];
+                    jsonString = JsonConvert.SerializeObject(t);
+                    sb.Append(jsonString);
+                    sb.Append('\n');
+                }
+
+                foreach(Projectile p in world.Projectiles.Values)
+                {
+                    Vector2D v = p.Direction;
+                    v *= ProjSpeed;
+                    //TODO: Handle Collisions
+                    p.Location += v;
+                    jsonString = JsonConvert.SerializeObject(p);
+                    sb.Append(jsonString);
+                    sb.Append('\n');
+                }
+
+                foreach (Beam b in world.Beams.Values)
+                {
+                    //TODO: check if tank died
+                    jsonString = JsonConvert.SerializeObject(b);
+                    sb.Append(jsonString);
+                    sb.Append('\n');
+                }
+                foreach(Powerup pow in world.Powerups.Values)
+                {
+                    //TODO: Check if tank picked up a powerup,
+                    jsonString = JsonConvert.SerializeObject(pow);
+                    sb.Append(jsonString);
+                    sb.Append('\n');
+                }
+                foreach (Socket socket in sockets.Values)
+                {
+
+                    Networking.Send(socket, sb.ToString());
+                }
+
+            }
+        }
+
         private void SetupMessageReceive(SocketState state)
         {
             state.OnNetworkAction = CheckName;
+
             Networking.GetData(state);
         }
 
@@ -81,6 +148,7 @@ namespace TankWars
                     tankSockets.Add(state.ID, tankID);
                     tankVelocities.Add(tankID, new Vector2D(0, 0));
                     world.Tanks.Add(tankID, t);
+                    sockets.Add(state.ID, state.TheSocket);
                 }
 
                 Networking.Send(state.TheSocket, tankID++ + "\n" + UniverseSize + "\n");
@@ -95,7 +163,7 @@ namespace TankWars
             string jsonString = null;
             foreach (Wall w in world.Walls.Values)
             {
-                jsonString = JsonConvert.SerializeObject(w);
+                jsonString = JsonConvert.SerializeObject(w) + '\n';
                 Networking.Send(state.TheSocket, jsonString);
             }
             state.OnNetworkAction = ReceiveControlCommands;
@@ -121,7 +189,7 @@ namespace TankWars
                         state.RemoveData(0, s.Length);
                         continue;
                     }
-
+                    //TODO handle exception when client closes
                     JObject obj = JObject.Parse(s);
 
                     JToken token = obj["moving"];
@@ -159,7 +227,7 @@ namespace TankWars
                     world.Projectiles.Add(projectileID, new Projectile(projectileID, world.Tanks[tankID].Location, world.Tanks[tankID].Aiming, false, tankID));
                     projectileID++;
                 }
-                else if (fire == "alt")
+                else if (fire == "alt" )//TODO: Check if tank can fire beam
                 {
                     world.Beams.Add(beamID, new Beam(beamID, world.Tanks[tankID].Location, world.Tanks[tankID].Aiming, tankID));
                     beamID++;
@@ -175,15 +243,19 @@ namespace TankWars
                 switch (moving)
                 {
                     case "up":
+                        world.Tanks[tankID].Orientation = new Vector2D(0, -1);
                         tankVelocities[tankID] = new Vector2D(0, -1) * TankSpeed;
                         break;
                     case "left":
+                        world.Tanks[tankID].Orientation = new Vector2D(-1, 0);
                         tankVelocities[tankID] = new Vector2D(-1, 0) * TankSpeed;
                         break;
                     case "down":
+                        world.Tanks[tankID].Orientation = new Vector2D(0, 1);
                         tankVelocities[tankID] = new Vector2D(0, 1) * TankSpeed;
                         break;
                     case "right":
+                        world.Tanks[tankID].Orientation = new Vector2D(1, 0);
                         tankVelocities[tankID] = new Vector2D(1, 0) * TankSpeed;
                         break;
                     default:
