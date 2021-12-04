@@ -1,24 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using System.Xml;
 using GameModel;
 using NetworkUtil;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using TankWars;
 
 namespace TankWars
 {
     public class Server
     {
+        private const int TankSpeed = 3;
+
         private int UniverseSize = -1;
         private int MSPerFrame = -1;
         private int FramesPerShot = -1;
         private int RespawnRate = -1;
 
         private int wallCount = 0;
-        private int TankID = 0;
-        private Vector2D newTankLoc = new Vector2D(0,0);
+        private int tankID = 0;
+        private int projectileID = 0;
+        private int beamID = 0;
+
+        private Vector2D newTankLoc = new Vector2D(0, 0);
+
+        private Dictionary<long, int> tankSockets;
+        private Dictionary<int, Vector2D> tankVelocities;
 
         public World world = new World();
 
@@ -30,7 +41,8 @@ namespace TankWars
         }
         public Server()
         {
-
+            tankSockets = new Dictionary<long, int>();
+            tankVelocities = new Dictionary<int, Vector2D>();
         }
 
         public void Run()
@@ -61,14 +73,17 @@ namespace TankWars
             {
                 //send worldsize and id and walls
 
+                // TODO: change newTankLoc
 
-                Tank t = new Tank(TankID, newTankLoc, newTankLoc, s.Trim('\n'), newTankLoc, 0, false, false, true);
+                Tank t = new Tank(tankID, newTankLoc, newTankLoc, s.Trim('\n'), newTankLoc, 0, false, false, true);
                 lock (world)
                 {
-                    world.Tanks.Add(TankID, t);
+                    tankSockets.Add(state.ID, tankID);
+                    tankVelocities.Add(tankID, new Vector2D(0, 0));
+                    world.Tanks.Add(tankID, t);
                 }
-                
-                Networking.Send(state.TheSocket, TankID++ + "\n" + UniverseSize + "\n");
+
+                Networking.Send(state.TheSocket, tankID++ + "\n" + UniverseSize + "\n");
                 state.OnNetworkAction = SendWalls;
                 state.OnNetworkAction(state);
             }
@@ -78,7 +93,7 @@ namespace TankWars
         private void SendWalls(SocketState state)
         {
             string jsonString = null;
-            foreach(Wall w in world.Walls.Values)
+            foreach (Wall w in world.Walls.Values)
             {
                 jsonString = JsonConvert.SerializeObject(w);
                 Networking.Send(state.TheSocket, jsonString);
@@ -90,10 +105,93 @@ namespace TankWars
 
         private void ReceiveControlCommands(SocketState state)
         {
+            string totalData = state.GetData();
+            string[] parts = Regex.Split(totalData, @"(?<=[\n])");
+            lock (world)
+            {
+                foreach (string s in parts)
+                {
+                    // This will be the final "part" in the data buffer
+                    if (!s.EndsWith("\n"))
+                        continue;
 
+                    // Ignore empty strings added by the regex splitter
+                    if (s.Length == 0)
+                    {
+                        state.RemoveData(0, s.Length);
+                        continue;
+                    }
 
+                    JObject obj = JObject.Parse(s);
+
+                    JToken token = obj["moving"];
+                    if (token != null)
+                    {
+                        ControlCmd cmd = JsonConvert.DeserializeObject<ControlCmd>(s);
+
+                        HandleTdir(cmd.Tdir, state.ID);
+                        HandleMoving(cmd.Moving, state.ID);
+                        HandleFire(cmd.Fire, state.ID);
+
+                        state.RemoveData(0, s.Length);
+                        continue;
+                    }
+                }
+            }
 
             Networking.GetData(state);
+        }
+
+        private void HandleTdir(Vector2D tdir, long stateID)
+        {
+            if (tankSockets.TryGetValue(stateID, out int tankID))
+            {
+                world.Tanks[tankID].Aiming = tdir;
+            }
+        }
+
+        private void HandleFire(string fire, long stateID)
+        {
+            if (tankSockets.TryGetValue(stateID, out int tankID))
+            {
+                if (fire == "main")
+                {
+                    world.Projectiles.Add(projectileID, new Projectile(projectileID, world.Tanks[tankID].Location, world.Tanks[tankID].Aiming, false, tankID));
+                    projectileID++;
+                }
+                else if (fire == "alt")
+                {
+                    world.Beams.Add(beamID, new Beam(beamID, world.Tanks[tankID].Location, world.Tanks[tankID].Aiming, tankID));
+                    beamID++;
+                }
+            }
+
+        }
+
+        private void HandleMoving(string moving, long stateID)
+        {
+            if (tankSockets.TryGetValue(stateID, out int tankID))
+            {
+                switch (moving)
+                {
+                    case "up":
+                        tankVelocities[tankID] = new Vector2D(0, -1) * TankSpeed;
+                        break;
+                    case "left":
+                        tankVelocities[tankID] = new Vector2D(-1, 0) * TankSpeed;
+                        break;
+                    case "down":
+                        tankVelocities[tankID] = new Vector2D(0, 1) * TankSpeed;
+                        break;
+                    case "right":
+                        tankVelocities[tankID] = new Vector2D(1, 0) * TankSpeed;
+                        break;
+                    default:
+                        tankVelocities[tankID] = new Vector2D(0, 0);
+                        break;
+                }
+
+            }
         }
 
         private void ReadSettingsXml()
@@ -218,7 +316,8 @@ namespace TankWars
                             if (p1 is null || p2 is null)
                             {
                                 throw new IOException("Could not parse Wall");
-                            } else
+                            }
+                            else
                             {
                                 world.Walls.Add(wallCount, new Wall(wallCount, p1, p2));
                                 wallCount++;

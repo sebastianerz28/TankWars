@@ -19,34 +19,34 @@ namespace GameModel
         public int ID { get; private set; }
 
         [JsonProperty(PropertyName = "loc")]
-        public Vector2D Location { get; private set; }
+        public Vector2D Location { get; set; }
 
         [JsonProperty(PropertyName = "bdir")]
-        public Vector2D Orientation { get; private set; }
+        public Vector2D Orientation { get; set; }
 
         [JsonProperty(PropertyName = "tdir")]
-        public Vector2D Aiming { get; private set; }
+        public Vector2D Aiming { get; set; }
 
         [JsonProperty(PropertyName = "name")]
-        public string Name { get; private set; }
+        public string Name { get; set; }
 
         [JsonProperty(PropertyName = "hp")]
-        public int HP { get; private set; }
+        public int HP { get; set; }
 
         [JsonProperty(PropertyName = "score")]
-        public int Score { get; private set; }
+        public int Score { get; set; }
 
         [JsonProperty(PropertyName = "died")]
-        public bool Died { get; private set; }
+        public bool Died { get; set; }
 
         [JsonProperty(PropertyName = "dc")]
-        public bool Disconnected { get; private set; }
+        public bool Disconnected { get; set; }
 
         [JsonProperty(PropertyName = "join")]
-        public bool Joined { get; private set; }
+        public bool Joined { get; set; }
 
         /// <summary>
-        /// Default Tank constructor
+        /// Default Tank constructor for Json serialization
         /// </summary>
         public Tank()
         {
@@ -65,5 +65,5 @@ namespace GameModel
             Disconnected = diconnected;
             Joined = joined;
         }
-    }  
+    }
 }

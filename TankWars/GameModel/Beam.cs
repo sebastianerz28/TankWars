@@ -20,5 +20,28 @@ namespace GameModel
 
         [JsonProperty(PropertyName = "owner")]
         public int Owner { get; private set; }
+        
+        /// <summary>
+        /// Default constructor for Json serialization 
+        /// </summary>
+        public Beam()
+        {
+
+        }
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="origin"></param>
+        /// <param name="direction"></param>
+        /// <param name="owner"></param>
+        public Beam(int id, Vector2D origin, Vector2D direction, int owner)
+        {
+            ID = id;
+            Origin = origin;
+            Direction = direction;
+            Owner = owner;
+        }
     }
 }
