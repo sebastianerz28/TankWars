@@ -36,13 +36,15 @@ namespace TankWars
         private int powerupCounter = 0;
 
 
-        private Vector2D newTankLoc = new Vector2D(0, 0);
+        private Vector2D newTankDir = new Vector2D(0, 0);
 
         private Dictionary<long, int> tankIDs;
         private Dictionary<int, Vector2D> tankVelocities;
         private Dictionary<long, Socket> sockets;
+        private Dictionary<int, int> numOfPowerups;
         private List<int> deadProjectiles;
         private List<int> deadTanks;
+        private List<int> deadPowerups;
 
         public World world = new World();
 
@@ -61,6 +63,9 @@ namespace TankWars
             sockets = new Dictionary<long, Socket>();
             deadProjectiles = new List<int>();
             deadTanks = new List<int>();
+            deadPowerups = new List<int>();
+            numOfPowerups = new Dictionary<int, int>();
+
         }
 
         public void Run()
@@ -93,7 +98,7 @@ namespace TankWars
                 if (++powerupCounter > PowerupRespawnRate)
                 {
                     if (world.Powerups.Count < MaxPowerups)
-                        world.Powerups.Add(powerupID, new Powerup(powerupID++, RandomSpawnLocation()));
+                        world.Powerups.Add(powerupID, new Powerup(powerupID++, RandomSpawnLocation(0)));
                     powerupCounter = 0;
                 }
 
@@ -119,6 +124,16 @@ namespace TankWars
                             break;
                         }
                     }
+                    foreach(Wall w in world.Walls.Values)
+                    {
+                        if(ObjCollidesWithWall(p.Location, w, 0))
+                        {
+                            p.Died = true;
+                            deadProjectiles.Add(p.ID);
+                            collided = true;
+                        }
+                    }
+
                     if (!collided)
                         p.Location += v;
                     else
@@ -126,6 +141,7 @@ namespace TankWars
                         p.Died = true;
                         deadProjectiles.Add(p.ID);
                     }
+
 
                     jsonString = JsonConvert.SerializeObject(p);
                     sb.Append(jsonString);
@@ -160,11 +176,28 @@ namespace TankWars
 
                 foreach (Powerup pow in world.Powerups.Values)
                 {
-                    //TODO: Check if tank picked up a powerup,
+                    
+                    
+                    foreach(Tank t in world.Tanks.Values)
+                    {
+                        if(TankHit(t.Location, pow.Location))
+                        {
+                            numOfPowerups[t.ID]++;
+                            pow.Died  = true;
+                            deadPowerups.Add(pow.ID);
+                        }
+                    }
+
+
                     jsonString = JsonConvert.SerializeObject(pow);
                     sb.Append(jsonString);
                     sb.Append('\n');
                 }
+                foreach(int ID in deadPowerups)
+                {
+                    world.Powerups.Remove(ID);
+                }
+                deadPowerups.Clear();
 
                 foreach (Tank t in world.Tanks.Values)
                 {
@@ -218,17 +251,19 @@ namespace TankWars
                 state.RemoveData(0, s.Length);
 
                 //send worldsize and id and walls
-                // TODO: change newTankLoc
+                //TODO: change newTankLoc
 
                 Console.WriteLine("Player " + tankID + " " + s + " joined.");
 
-                Tank t = new Tank(tankID, newTankLoc, newTankLoc, s.Trim('\n'), newTankLoc);
+                
                 lock (world)
                 {
+                    Tank t = new Tank(tankID, RandomSpawnLocation(TankSize), newTankDir, s.Trim('\n'), newTankDir);
                     tankIDs.Add(state.ID, tankID);
                     tankVelocities.Add(tankID, new Vector2D(0, 0));
                     world.Tanks.Add(tankID, t);
                     sockets.Add(state.ID, state.TheSocket);
+                    numOfPowerups.Add(tankID, 0);
                 }
 
                 Networking.Send(state.TheSocket, tankID++ + "\n" + UniverseSize + "\n");
@@ -308,16 +343,21 @@ namespace TankWars
         {
             if (tankIDs.TryGetValue(stateID, out int tankID))
             {
-                if (fire == "main")
+                if(world.Tanks[tankID].HP != 0)
                 {
-                    world.Projectiles.Add(projectileID, new Projectile(projectileID, world.Tanks[tankID].Location, world.Tanks[tankID].Aiming, false, tankID));
-                    projectileID++;
+                    if (fire == "main")
+                    {
+                        world.Projectiles.Add(projectileID, new Projectile(projectileID, world.Tanks[tankID].Location, world.Tanks[tankID].Aiming, false, tankID));
+                        projectileID++;
+                    }
+                    else if (fire == "alt" && numOfPowerups[tankID] > 0)
+                    {
+                        numOfPowerups[tankID]--;
+                        world.Beams.Add(beamID, new Beam(beamID, world.Tanks[tankID].Location, world.Tanks[tankID].Aiming, tankID));
+                        beamID++;
+                    }
                 }
-                else if (fire == "alt")//TODO: Check if tank can fire beam
-                {
-                    world.Beams.Add(beamID, new Beam(beamID, world.Tanks[tankID].Location, world.Tanks[tankID].Aiming, tankID));
-                    beamID++;
-                }
+                
             }
 
         }
@@ -634,16 +674,32 @@ namespace TankWars
         /// TODO
         /// </summary>
         /// <returns></returns>
-        private Vector2D RandomSpawnLocation()
+        private Vector2D RandomSpawnLocation(int size)
         {
-            Random rand = new Random();
+            bool collision = false;
+          
+            while (true)
+            {
+                Random rand = new Random();
 
-            double x = rand.Next(-UniverseSize / 2, UniverseSize / 2);
-            double y = rand.Next(-UniverseSize / 2, UniverseSize / 2);
+                double x = rand.Next((-UniverseSize / 2) + WallSize, (UniverseSize / 2) - WallSize);
+                double y = rand.Next((-UniverseSize / 2) + WallSize, (UniverseSize / 2) - WallSize);
+
+                Vector2D randLoc = new Vector2D(x, y);
+
+                foreach (Wall w in world.Walls.Values)
+                {
+                    if (ObjCollidesWithWall(randLoc, w, size))
+                    {
+                        collision = true;
+                    }
+                }
+                if (!collision)
+                    return randLoc;
+            }
 
             // TODO: check for collisions
 
-            return new Vector2D(x, y);
         }
 
     }

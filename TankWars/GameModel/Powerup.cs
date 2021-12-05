@@ -21,7 +21,7 @@ namespace GameModel
         public Vector2D Location { get; private set; }
 
         [JsonProperty(PropertyName = "died")]
-        public bool Died { get; private set; }
+        public bool Died { get; set; }
     
         /// <summary>
         /// TODO
