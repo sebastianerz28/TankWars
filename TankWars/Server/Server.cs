@@ -19,6 +19,8 @@ namespace TankWars
         private const int TankSpeed = 3;
         private const int ProjSpeed = 25;
         private const int TankSize = 60;
+        private const int PowerupRespawnRate = 420;
+        private const int MaxPowerups = 4;
 
         private int UniverseSize = -1;
         private int MSPerFrame = -1;
@@ -83,9 +85,11 @@ namespace TankWars
         {
             lock (world)
             {
-                if (++powerupCounter > 300)
+                if (++powerupCounter > PowerupRespawnRate)
                 {
-                    world.Powerups.Add(powerupID, new Powerup(powerupID, ))
+                    if (world.Powerups.Count < MaxPowerups)
+                        world.Powerups.Add(powerupID, new Powerup(powerupID++, RandomSpawnLocation()));
+                    powerupCounter = 0;
                 }
 
                 StringBuilder sb = new StringBuilder();
@@ -131,7 +135,19 @@ namespace TankWars
                 foreach (Tank t in world.Tanks.Values)
                 {
                     //TODO: Handle Collisions
-                    t.Location += tankVelocities[t.ID];
+                    
+                    bool collided = false;
+                    foreach (Wall w in world.Walls.Values)
+                    {
+                        if (TankCollidesWithWall(t.Location + tankVelocities[t.ID], w))
+                        {
+                            collided = true;
+                            break;
+                        }
+                    }
+                    if(!collided)
+                        t.Location += tankVelocities[t.ID];
+
                     jsonString = JsonConvert.SerializeObject(t);
                     sb.Append(jsonString);
                     sb.Append('\n');
@@ -484,6 +500,67 @@ namespace TankWars
             double root2 = -b - Math.Sqrt(disc);
 
             return (root1 > 0.0 && root2 > 0.0);
+        }
+
+
+        private bool TankCollidesWithWall(Vector2D objA, Wall wall)
+        {
+            Vector2D p1Wall = wall.P1;
+            Vector2D p2Wall = wall.P2;
+            if(p1Wall.GetX() == p2Wall.GetX())
+            {
+                double leftX = p1Wall.GetX() - 25 - 30;
+                double rightX = p1Wall.GetX() + 25 + 30;
+                double topY;
+                double botY;
+                if(p1Wall.GetY() <= p2Wall.GetY())
+                {
+                    topY = p1Wall.GetY() - 25 - 30;
+                    botY = p2Wall.GetY() + 25 + 30;
+                }
+                else
+                {
+                    topY = p2Wall.GetY() - 25 - 30;
+                    botY = p1Wall.GetY() + 25 + 30;
+                }
+                double objX = objA.GetX();
+                double objY = objA.GetY();
+                if(objX <= rightX && objX >= leftX && objY >= topY && objY <= botY)
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                double topY = p1Wall.GetY() - 25 - 30;
+                double botY = p1Wall.GetY() + 25 + 30;
+                double leftX;
+                double rightX;
+                if (p1Wall.GetX() <= p2Wall.GetX())
+                {
+                    leftX = p1Wall.GetX() - 25 - 30;
+                    rightX = p2Wall.GetX() + 25 + 30;
+                }
+                else
+                {
+                    leftX = p2Wall.GetX() - 25 - 30;
+                    rightX = p1Wall.GetX() + 25 + 30;
+                }
+                double objX = objA.GetX();
+                double objY = objA.GetY();
+                if (objX <= rightX && objX >= leftX && objY >= topY && objY <= botY)
+                {
+                    return true;
+                }
+            }
+            
+
+            return false;
+        }
+
+        private bool ProjHit(Vector2D objA, Vector2D objB)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

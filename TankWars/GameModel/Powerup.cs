@@ -31,6 +31,8 @@ namespace GameModel
         public Powerup(int id, Vector2D location)
         {
             Died = false;
+            ID = id;
+            Location = location;
         }
 
         /// <summary>
