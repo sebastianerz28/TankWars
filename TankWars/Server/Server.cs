@@ -14,6 +14,9 @@ using TankWars;
 
 namespace TankWars
 {
+    // TODO: fix race condition
+    // TODO: respawn tanks
+
     public class Server
     {
         private const int TankSpeed = 3;
@@ -42,9 +45,10 @@ namespace TankWars
         private Dictionary<int, Vector2D> tankVelocities;
         private Dictionary<long, Socket> sockets;
         private Dictionary<int, int> numOfPowerups;
+        private Dictionary<int, int> shotDelays;
         private List<int> deadProjectiles;
-        private List<int> deadTanks;
         private List<int> deadPowerups;
+        private List<int> disconnectedTanks;
 
         public World world = new World();
 
@@ -62,10 +66,10 @@ namespace TankWars
             tankVelocities = new Dictionary<int, Vector2D>();
             sockets = new Dictionary<long, Socket>();
             deadProjectiles = new List<int>();
-            deadTanks = new List<int>();
             deadPowerups = new List<int>();
             numOfPowerups = new Dictionary<int, int>();
-
+            shotDelays = new Dictionary<int, int>();
+            disconnectedTanks = new List<int>();
         }
 
         public void Run()
@@ -117,8 +121,8 @@ namespace TankWars
                         {
                             if(--t.HP == 0)
                             {
+                                world.Tanks[p.Owner].Score++; // increment the score of the tank who shot the bullet
                                 t.Died = true;
-                                deadTanks.Add(t.ID);
                             }                            
                             collided = true;
                             break;
@@ -163,7 +167,6 @@ namespace TankWars
                         {
                             t.Died = true;
                             t.HP = 0;
-                            deadTanks.Add(t.ID);
                         }
                     }
 
@@ -201,32 +204,52 @@ namespace TankWars
 
                 foreach (Tank t in world.Tanks.Values)
                 {
-                    if(t.HP != 0)
+                    if (!t.Disconnected)
                     {
-                        bool collided = false;
-                        foreach (Wall w in world.Walls.Values)
+                        if (shotDelays[t.ID] != 0)
                         {
-                            if (ObjCollidesWithWall(t.Location + tankVelocities[t.ID], w, TankSize))
-                            {
-                                collided = true;
-                                break;
-                            }
+                            shotDelays[t.ID]--; // increment shot delay for each tank if the tank's shot delay isn't 0
                         }
-                        if (!collided)
-                            t.Location += tankVelocities[t.ID];
+                        if (t.HP != 0)
+                        {
+                            bool collided = false;
+                            foreach (Wall w in world.Walls.Values)
+                            {
+                                if (ObjCollidesWithWall(t.Location + tankVelocities[t.ID], w, TankSize))
+                                {
+                                    collided = true;
+                                    break;
+                                }
+                            }
+                            if (!collided)
+                                t.Location += tankVelocities[t.ID];
+                        }
+                    }
+                    else
+                    {
+                        disconnectedTanks.Add(t.ID);
                     }
 
                     jsonString = JsonConvert.SerializeObject(t);
                     sb.Append(jsonString);
                     sb.Append('\n');
+
+                    if (t.Joined)
+                        t.Joined = false;
+
+                    if (t.Died)
+                        t.Died = false;
                 }
 
-                foreach (int tankID in deadTanks)
+                foreach (int tankID in disconnectedTanks) // remove tanks that disconnected from dictionaries and world
                 {
-                    world.Tanks[tankID].Died = false;
+                    world.Tanks.Remove(tankID);
+                    shotDelays.Remove(tankID);
+                    tankVelocities.Remove(tankID);
+                    numOfPowerups.Remove(tankID);
                 }
 
-                deadTanks.Clear();
+                disconnectedTanks.Clear();
 
                 foreach (Socket socket in sockets.Values)
                 {
@@ -251,14 +274,13 @@ namespace TankWars
                 state.RemoveData(0, s.Length);
 
                 //send worldsize and id and walls
-                //TODO: change newTankLoc
-
-                Console.WriteLine("Player " + tankID + " " + s + " joined.");
+                Console.WriteLine("Player " + tankID + " " + s.Trim('\n') + " joined.");
 
                 
                 lock (world)
                 {
                     Tank t = new Tank(tankID, RandomSpawnLocation(TankSize), newTankDir, s.Trim('\n'), newTankDir);
+                    shotDelays.Add(tankID, FramesPerShot);
                     tankIDs.Add(state.ID, tankID);
                     tankVelocities.Add(tankID, new Vector2D(0, 0));
                     world.Tanks.Add(tankID, t);
@@ -291,6 +313,9 @@ namespace TankWars
             if (state.ErrorOccurred)
             {
                 Console.WriteLine("Cient " + tankIDs[state.ID] + " disconnected.");
+                world.Tanks[tankIDs[state.ID]].Disconnected = true;
+                tankIDs.Remove(state.ID);
+                sockets.Remove(state.ID);
                 return;
             }
 
@@ -310,7 +335,6 @@ namespace TankWars
                         state.RemoveData(0, s.Length);
                         continue;
                     }
-                    //TODO handle exception when client closes
                     JObject obj = JObject.Parse(s);
 
                     JToken token = obj["moving"];
@@ -345,8 +369,9 @@ namespace TankWars
             {
                 if(world.Tanks[tankID].HP != 0)
                 {
-                    if (fire == "main")
+                    if (fire == "main" && shotDelays[tankID] == 0)
                     {
+                        shotDelays[tankID] = FramesPerShot;
                         world.Projectiles.Add(projectileID, new Projectile(projectileID, world.Tanks[tankID].Location, world.Tanks[tankID].Aiming, false, tankID));
                         projectileID++;
                     }
@@ -697,9 +722,6 @@ namespace TankWars
                 if (!collision)
                     return randLoc;
             }
-
-            // TODO: check for collisions
-
         }
 
     }
