@@ -18,6 +18,7 @@ namespace TankWars
     {
         private const int TankSpeed = 3;
         private const int ProjSpeed = 25;
+        private const int WallSize = 50;
         private const int TankSize = 60;
         private const int PowerupRespawnRate = 420;
         private const int MaxPowerups = 4;
@@ -40,6 +41,8 @@ namespace TankWars
         private Dictionary<long, int> tankIDs;
         private Dictionary<int, Vector2D> tankVelocities;
         private Dictionary<long, Socket> sockets;
+        private List<int> deadProjectiles;
+        private List<int> deadTanks;
 
         public World world = new World();
 
@@ -56,6 +59,8 @@ namespace TankWars
             tankIDs = new Dictionary<long, int>();
             tankVelocities = new Dictionary<int, Vector2D>();
             sockets = new Dictionary<long, Socket>();
+            deadProjectiles = new List<int>();
+            deadTanks = new List<int>();
         }
 
         public void Run()
@@ -78,7 +83,7 @@ namespace TankWars
                 watch.Restart();
                 UpdateWorld();
             }
-            
+
         }
 
         private void UpdateWorld()
@@ -95,25 +100,54 @@ namespace TankWars
                 StringBuilder sb = new StringBuilder();
                 string jsonString = "";
 
-                foreach(Projectile p in world.Projectiles.Values)
+                foreach (Projectile p in world.Projectiles.Values)
                 {
                     Vector2D v = p.Direction;
                     v *= ProjSpeed;
-                    //TODO: Handle Collisions
-                    p.Location += v;
+
+                    bool collided = false;
+                    foreach (Tank t in world.Tanks.Values)
+                    {
+                        if (t.ID != p.Owner && t.HP > 0 && TankHit(t.Location, p.Location))
+                        {
+                            if(--t.HP == 0)
+                            {
+                                t.Died = true;
+                                deadTanks.Add(t.ID);
+                            }                            
+                            collided = true;
+                            break;
+                        }
+                    }
+                    if (!collided)
+                        p.Location += v;
+                    else
+                    {
+                        p.Died = true;
+                        deadProjectiles.Add(p.ID);
+                    }
+
                     jsonString = JsonConvert.SerializeObject(p);
                     sb.Append(jsonString);
                     sb.Append('\n');
                 }
 
+                foreach (int proj in deadProjectiles)
+                {
+                    world.Projectiles.Remove(proj);
+                }
+
+                deadProjectiles.Clear();
+
                 foreach (Beam b in world.Beams.Values)
                 {
-                    foreach(Tank t in world.Tanks.Values)
+                    foreach (Tank t in world.Tanks.Values)
                     {
-                        if (Intersects(b.Origin, b.Direction, t.Location, TankSize / 2))
+                        if (t.ID != b.Owner && Intersects(b.Origin, b.Direction, t.Location, TankSize / 2))
                         {
                             t.Died = true;
                             t.HP = 0;
+                            deadTanks.Add(t.ID);
                         }
                     }
 
@@ -124,7 +158,7 @@ namespace TankWars
 
                 world.Beams.Clear();
 
-                foreach(Powerup pow in world.Powerups.Values)
+                foreach (Powerup pow in world.Powerups.Values)
                 {
                     //TODO: Check if tank picked up a powerup,
                     jsonString = JsonConvert.SerializeObject(pow);
@@ -134,28 +168,35 @@ namespace TankWars
 
                 foreach (Tank t in world.Tanks.Values)
                 {
-                    //TODO: Handle Collisions
-                    
-                    bool collided = false;
-                    foreach (Wall w in world.Walls.Values)
+                    if(t.HP != 0)
                     {
-                        if (TankCollidesWithWall(t.Location + tankVelocities[t.ID], w))
+                        bool collided = false;
+                        foreach (Wall w in world.Walls.Values)
                         {
-                            collided = true;
-                            break;
+                            if (ObjCollidesWithWall(t.Location + tankVelocities[t.ID], w, TankSize))
+                            {
+                                collided = true;
+                                break;
+                            }
                         }
+                        if (!collided)
+                            t.Location += tankVelocities[t.ID];
                     }
-                    if(!collided)
-                        t.Location += tankVelocities[t.ID];
 
                     jsonString = JsonConvert.SerializeObject(t);
                     sb.Append(jsonString);
                     sb.Append('\n');
                 }
 
+                foreach (int tankID in deadTanks)
+                {
+                    world.Tanks[tankID].Died = false;
+                }
+
+                deadTanks.Clear();
+
                 foreach (Socket socket in sockets.Values)
                 {
-
                     Networking.Send(socket, sb.ToString());
                 }
 
@@ -272,7 +313,7 @@ namespace TankWars
                     world.Projectiles.Add(projectileID, new Projectile(projectileID, world.Tanks[tankID].Location, world.Tanks[tankID].Aiming, false, tankID));
                     projectileID++;
                 }
-                else if (fire == "alt" )//TODO: Check if tank can fire beam
+                else if (fire == "alt")//TODO: Check if tank can fire beam
                 {
                     world.Beams.Add(beamID, new Beam(beamID, world.Tanks[tankID].Location, world.Tanks[tankID].Aiming, tankID));
                     beamID++;
@@ -502,65 +543,91 @@ namespace TankWars
             return (root1 > 0.0 && root2 > 0.0);
         }
 
-
-        private bool TankCollidesWithWall(Vector2D objA, Wall wall)
+        /// <summary>
+        /// TODO
+        ///
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="wall"></param>
+        /// <param name="objSize"></param>
+        /// <returns></returns>
+        private static bool ObjCollidesWithWall(Vector2D obj, Wall wall, int objSize)
         {
+            int halfWallSize = WallSize / 2;
             Vector2D p1Wall = wall.P1;
             Vector2D p2Wall = wall.P2;
-            if(p1Wall.GetX() == p2Wall.GetX())
+            int halfobjSize = objSize / 2;
+            if (p1Wall.GetX() == p2Wall.GetX())
             {
-                double leftX = p1Wall.GetX() - 25 - 30;
-                double rightX = p1Wall.GetX() + 25 + 30;
+                double leftX = p1Wall.GetX() - halfWallSize - halfobjSize;
+                double rightX = p1Wall.GetX() + halfWallSize + halfobjSize;
                 double topY;
                 double botY;
-                if(p1Wall.GetY() <= p2Wall.GetY())
+                if (p1Wall.GetY() <= p2Wall.GetY())
                 {
-                    topY = p1Wall.GetY() - 25 - 30;
-                    botY = p2Wall.GetY() + 25 + 30;
+                    topY = p1Wall.GetY() - halfWallSize - halfobjSize;
+                    botY = p2Wall.GetY() + halfWallSize + halfobjSize;
                 }
                 else
                 {
-                    topY = p2Wall.GetY() - 25 - 30;
-                    botY = p1Wall.GetY() + 25 + 30;
+                    topY = p2Wall.GetY() - halfWallSize - halfobjSize;
+                    botY = p1Wall.GetY() + halfWallSize + halfobjSize;
                 }
-                double objX = objA.GetX();
-                double objY = objA.GetY();
-                if(objX <= rightX && objX >= leftX && objY >= topY && objY <= botY)
+                double objX = obj.GetX();
+                double objY = obj.GetY();
+                if (objX <= rightX && objX >= leftX && objY >= topY && objY <= botY)
                 {
                     return true;
                 }
             }
             else
             {
-                double topY = p1Wall.GetY() - 25 - 30;
-                double botY = p1Wall.GetY() + 25 + 30;
+                double topY = p1Wall.GetY() - halfWallSize - halfobjSize;
+                double botY = p1Wall.GetY() + halfWallSize + halfobjSize;
                 double leftX;
                 double rightX;
                 if (p1Wall.GetX() <= p2Wall.GetX())
                 {
-                    leftX = p1Wall.GetX() - 25 - 30;
-                    rightX = p2Wall.GetX() + 25 + 30;
+                    leftX = p1Wall.GetX() - halfWallSize - halfobjSize;
+                    rightX = p2Wall.GetX() + halfWallSize + halfobjSize;
                 }
                 else
                 {
-                    leftX = p2Wall.GetX() - 25 - 30;
-                    rightX = p1Wall.GetX() + 25 + 30;
+                    leftX = p2Wall.GetX() - halfWallSize - halfobjSize;
+                    rightX = p1Wall.GetX() + halfWallSize + halfobjSize;
                 }
-                double objX = objA.GetX();
-                double objY = objA.GetY();
+                double objX = obj.GetX();
+                double objY = obj.GetY();
                 if (objX <= rightX && objX >= leftX && objY >= topY && objY <= botY)
                 {
                     return true;
                 }
             }
-            
+
 
             return false;
         }
 
-        private bool ProjHit(Vector2D objA, Vector2D objB)
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="tank"></param>
+        /// <param name="projectile"></param>
+        /// <returns></returns>
+        private static bool TankHit(Vector2D tank, Vector2D projectile)
         {
-            throw new NotImplementedException();
+            int halfTankSize = TankSize / 2;
+            double leftX = tank.GetX() - halfTankSize;
+            double rightX = tank.GetX() + halfTankSize;
+            double topY = tank.GetY() - halfTankSize;
+            double botY = tank.GetY() + halfTankSize;
+            double objX = projectile.GetX();
+            double objY = projectile.GetY();
+            if (objX <= rightX && objX >= leftX && objY >= topY && objY <= botY)
+            {
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
