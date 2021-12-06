@@ -14,12 +14,9 @@ using GameModel;
 using NetworkUtil;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using TankWars;
 
 namespace TankWars
 {
-
-
     public class Server
     {
         private const int TankSpeed = 3;
@@ -75,6 +72,7 @@ namespace TankWars
             s.Run();
             Console.Read();
         }
+
         /// <summary>
         /// Constructor for server
         /// Initializes all lists and dictionaries
@@ -91,6 +89,7 @@ namespace TankWars
             disconnectedTanks = new List<int>();
             respawnDelay = new Dictionary<int, int>();
         }
+
         /// <summary>
         /// To be called by a server object
         /// Parses XML file with the server settings
@@ -119,6 +118,7 @@ namespace TankWars
             }
 
         }
+
         /// <summary>
         /// Updates the world and serializes all objects in JSON to be sent to each client
         /// Updates projectile locations checking for collisions updating score and health as needed
@@ -128,7 +128,7 @@ namespace TankWars
         private void UpdateWorld()
         {
             lock (world)
-            { 
+            {
                 if (++powerupCounter > PowerupRespawnRate) //If enough time has passed a new powerup can be added to the game
                 {
                     if (world.Powerups.Count < MaxPowerups)
@@ -136,7 +136,7 @@ namespace TankWars
                     powerupCounter = 0;
                 }
 
-                
+
                 StringBuilder sb = new StringBuilder();
                 string jsonString = "";
 
@@ -151,19 +151,19 @@ namespace TankWars
                     {
                         if (t.ID != p.Owner && t.HP > 0 && TankHit(t.Location, p.Location)) //Checks if tank was hit by the projectile
                         {
-                            if(--t.HP == 0)
+                            if (--t.HP == 0)
                             {
-                                
+
                                 world.Tanks[p.Owner].Score++; // increment the score of the tank who shot the bullet
                                 t.Died = true;
-                            }                            
+                            }
                             collided = true;
                             break;
                         }
                     }
-                    foreach(Wall w in world.Walls.Values)
+                    foreach (Wall w in world.Walls.Values)
                     {
-                        if(ObjCollidesWithWall(p.Location, w, 0)) //Checks if projectile hit wall
+                        if (ObjCollidesWithWall(p.Location, w, 0)) //Checks if projectile hit wall
                         {
                             p.Died = true;
                             deadProjectiles.Add(p.ID);
@@ -212,14 +212,14 @@ namespace TankWars
 
                 foreach (Powerup pow in world.Powerups.Values)
                 {
-                    
-                    
-                    foreach(Tank t in world.Tanks.Values)
+
+
+                    foreach (Tank t in world.Tanks.Values)
                     {
-                        if(TankHit(t.Location, pow.Location)) //Checks if powerup was collected
+                        if (TankHit(t.Location, pow.Location)) //Checks if powerup was collected
                         {
                             numOfPowerups[t.ID]++;
-                            pow.Died  = true;
+                            pow.Died = true;
                             deadPowerups.Add(pow.ID);
                         }
                     }
@@ -229,19 +229,19 @@ namespace TankWars
                     sb.Append(jsonString);
                     sb.Append('\n');
                 }
-                foreach(int ID in deadPowerups) //Removes any projectiles marked as dead from dictionary
+                foreach (int ID in deadPowerups) //Removes any projectiles marked as dead from dictionary
                 {
                     world.Powerups.Remove(ID);
                 }
                 deadPowerups.Clear();
 
-                
+
 
                 foreach (Tank t in world.Tanks.Values)
                 {
                     if (!t.Disconnected)
                     {
-                        if(t.HP == 0)
+                        if (t.HP == 0)
                         {
 
                             if (--respawnDelay[t.ID] == 0) //Check if enough time has passed so tank can respawn
@@ -250,7 +250,7 @@ namespace TankWars
                                 respawnDelay[t.ID] = RespawnRate;
                                 t.Location = RandomSpawnLocation(TankSize);
                             }
-                               
+
 
                         }
                         if (shotDelays[t.ID] != 0)
@@ -319,6 +319,7 @@ namespace TankWars
 
             Networking.GetData(state);
         }
+
         /// <summary>
         /// Checks that the name is valid and prints that player has joined
         /// Adds player to all necessary dictionaries
@@ -348,12 +349,13 @@ namespace TankWars
                     tankIDs.Add(state.ID, tankID++);
                 }
 
-                
+
                 state.OnNetworkAction = SendWalls;
                 state.OnNetworkAction(state);
             }
 
         }
+
         /// <summary>
         /// Sends walls to the client
         /// Sets the state.OnNetworkAction to the event loop that repeadtly listens for control commands
@@ -423,9 +425,9 @@ namespace TankWars
                     }
                 }
             }
-
             Networking.GetData(state);
         }
+
         /// <summary>
         /// Private helper method to update direction that turret is facing
         /// </summary>
@@ -438,6 +440,7 @@ namespace TankWars
                 world.Tanks[tankID].Aiming = tdir;
             }
         }
+
         /// <summary>
         /// Ensures all fire commands are valid
         /// Main shot will only be processed if the delay between shots has passed
@@ -450,12 +453,12 @@ namespace TankWars
         {
             if (tankIDs.TryGetValue(stateID, out int tankID))
             {
-                if(world.Tanks[tankID].HP != 0)
+                if (world.Tanks[tankID].HP != 0)
                 {
                     if (fire == "main" && shotDelays[tankID] == 0)
                     {
                         shotDelays[tankID] = FramesPerShot;
-                        world.Projectiles.Add(projectileID, new Projectile(projectileID, world.Tanks[tankID].Location, world.Tanks[tankID].Aiming, false, tankID));
+                        world.Projectiles.Add(projectileID, new Projectile(projectileID, world.Tanks[tankID].Location, world.Tanks[tankID].Aiming, tankID));
                         projectileID++;
                     }
                     else if (fire == "alt" && numOfPowerups[tankID] > 0)
@@ -465,10 +468,11 @@ namespace TankWars
                         beamID++;
                     }
                 }
-                
+
             }
 
         }
+
         /// <summary>
         /// Updates the tank velocity in the direction state by "moving"
         /// </summary>
@@ -503,6 +507,7 @@ namespace TankWars
 
             }
         }
+
         /// <summary>
         /// Reads the XML file containing all the server settings
         /// </summary>
@@ -537,6 +542,7 @@ namespace TankWars
                 }
             }
         }
+
         /// <summary>
         /// Helper method to read the properties of a wall
         /// Creates a new Wall object and adds it the the dictionary in the world that contains walls
@@ -646,6 +652,7 @@ namespace TankWars
 
             }
         }
+
         /// <summary>
         /// Private helper method that parses a numeric setting from the XML file and assigns it
         /// </summary>
@@ -663,7 +670,6 @@ namespace TankWars
                 }
             }
         }
-
 
         /// <summary>
         /// Determines if a ray interescts a circle
@@ -767,8 +773,6 @@ namespace TankWars
                     return true;
                 }
             }
-
-
             return false;
         }
 
@@ -804,8 +808,6 @@ namespace TankWars
         /// <returns></returns>
         private Vector2D RandomSpawnLocation(int size)
         {
-            
-            
             while (true)
             {
                 bool collision = false;
@@ -826,6 +828,5 @@ namespace TankWars
                     return randLoc;
             }
         }
-
     }
 }

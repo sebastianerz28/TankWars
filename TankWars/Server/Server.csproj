@@ -6,14 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="README.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="README.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\GameModel\GameModel.csproj" />
     <ProjectReference Include="..\Vector2D\Vector2D.csproj" />
   </ItemGroup>

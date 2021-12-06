@@ -30,12 +30,12 @@ namespace GameModel
         }
 
         /// <summary>
-        /// TODO
+        /// Beam constructor to be used in server
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="origin"></param>
-        /// <param name="direction"></param>
-        /// <param name="owner"></param>
+        /// <param name="id">the ID of the beam</param>
+        /// <param name="origin">origin vector of the beam</param>
+        /// <param name="direction">direction vecotr of the beam</param>
+        /// <param name="owner">the ID of the tank that fired the beam</param>
         public Beam(int id, Vector2D origin, Vector2D direction, int owner)
         {
             ID = id;

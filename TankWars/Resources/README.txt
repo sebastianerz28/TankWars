@@ -2,6 +2,8 @@
 created by Grant Nations, Sebastian Ramirez
 contributors: Daniel Kopta
 
+This project was implemented during the Fall 2021 Semester at the University of Utah for CS 3500. Entry dates span
+November 16, 2021 to December 5, 2021. 
 
 
 DESCRIPTION:
@@ -14,7 +16,14 @@ DESCRIPTION:
 	powerups, projectiles, and animations. The client is also responsible for managing computer inputs from the user and 
 	sending the appropriate commands back to the server.
 
+	The TankWars Server performs operations such as physics transformations, collision handling, and user connection.
+	The server then updates the state of the world for each client that is connected to it at a rate determined by the 
+	server settings.
 
+
+
+
+CLIENT
 
 
 BASIC USAGE:
@@ -130,10 +139,63 @@ DESIGN DECISIONS:
 
 	
 
-TIMELINE
 
-	This project was implemented during the Fall 2021 Semester at the University of Utah for CS 3500. Entry dates span
-	November 16, 2021 to November 28, 2021. 
+
+
+
+SERVER
+
+
+
+OPERATIONS:
+
+	Updating object locations:
+
+	Tanks and projectiles both need to have their positions updated on each frame. This is accomplished by 
+	representing the velocity of the object as a vector and incrementing the object’s position vector with this vector
+	on each frame. In the case of a Tank, its position is only adjusted if a control command reveals that the tank is
+	moving. A projectile’s position will always be updated, until it collides with a wall or a tank. If a tank were to 
+	collide with a wall after updating its position, then its position is not updated.
+
+	Collision detection:
+
+	Collisions are detected as three separate cases. The first case is collisions of a beam and a tank, which uses a 
+	method written by Prof. Daniel Kopta, that assumes the area of a tank as a circle of radius TankSize/2 and checks
+	for intersection of a beam with that circle. The second case is an object colliding with a wall, such as a tank or a projectile.
+	This method takes in the size of the object that is potentially colliding with a wall which allows it to be used for projectiles,
+	where the size of a projectile is 0, and tanks, where the size of a tank is TankSize. The third case is a projectile colliding
+	with a tank. This method simply checks if the point of the projectile is within the left, right, top and bottom bounds of a tank.
+	
+
+	Settings file:
+
+	The settings file is an XML file that contains values to be assigned to the UniverseSize, MSPerFrame, FramesPerShot,
+	and RespawnRate instance variables of a server object. It also contains all of the walls to be sent to the client as part
+	of the handshake.
+
+
+
+EXTERNAL REFERENCES:
+
+	The server uses an XmlReader object to read the settings file. Reference information regarding this object was
+	accessed at https://docs.microsoft.com/en-us/dotnet/api/system.xml.xmlreader.read?view=net-6.0.
+
+
+
+IMPLEMENTATION DETAILS:
+
+	Random spawn location:
+
+	Tanks and powerups both spawn at random locations within the bounds of the universe’s walls. This is accomplished through
+	a private method that creates a vector using a random x and y within bounds, then checks that this point has no collisions
+	with a wall. If a collision is detected, then a new point is generated and checked. This process is repeated until no 
+	collision is detected, and the location vector is returned.
+
+
+
+
+
+
 
 
 

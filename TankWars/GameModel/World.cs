@@ -17,6 +17,9 @@ namespace GameModel
         public int PlayerID { get; set; }
         public int WorldSize { get; set; }
 
+        /// <summary>
+        /// World constructor
+        /// </summary>
         public World()
         {
             Tanks = new Dictionary<int, Tank>();

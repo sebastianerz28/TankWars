@@ -24,7 +24,7 @@ namespace GameModel
         public Vector2D P2 { get; private set; }
 
         /// <summary>
-        /// Three parameter constructor
+        /// Wall constructor to be used in server
         /// </summary>
         /// <param name="ID">the ID of the wall</param>
         /// <param name="p1">the initial endpoint of the Wall</param>

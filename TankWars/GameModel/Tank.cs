@@ -54,6 +54,14 @@ namespace GameModel
 
         }
 
+        /// <summary>
+        /// Tank constructor to be used in server
+        /// </summary>
+        /// <param name="id">the ID of the tank</param>
+        /// <param name="location">the location vector of the tank</param>
+        /// <param name="orientation">the vector determining the direction that the tank is facing</param>
+        /// <param name="name">the player name associated with the tank</param>
+        /// <param name="aiming">the vector determining the direction of the tank's turret</param>
         public Tank(int id, Vector2D location, Vector2D orientation, string name, Vector2D aiming)
         {
             ID = id;

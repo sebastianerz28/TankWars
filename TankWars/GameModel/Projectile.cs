@@ -41,19 +41,18 @@ namespace GameModel
         }
 
         /// <summary>
-        /// TODO
+        /// Projectile constructor to be used in server
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="location"></param>
-        /// <param name="direction"></param>
-        /// <param name="died"></param>
-        /// <param name="owner"></param>
-        public Projectile(int id, Vector2D location, Vector2D direction, bool died, int owner)
+        /// <param name="id">the ID of the projectile</param>
+        /// <param name="location">the location vector of the projectile</param>
+        /// <param name="direction">the direction vector of the projectile</param>
+        /// <param name="owner">the ID of the tank that shot the projectile</param>
+        public Projectile(int id, Vector2D location, Vector2D direction, int owner)
         {
             ID = id;
             Location = location;
             Direction = direction;
-            Died = died;
+            Died = false;
             Owner = owner;
         }
 
