@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Author: Grant Nations
+// Author: Sebastian Ramirez
+// Server class for CS 3500 TankWars Server (PS9)
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -14,8 +18,7 @@ using TankWars;
 
 namespace TankWars
 {
-    // TODO: fix race condition
-    // TODO: respawn tanks
+
 
     public class Server
     {
@@ -39,27 +42,43 @@ namespace TankWars
         private int powerupCounter = 0;
 
 
-        private Vector2D newTankDir = new Vector2D(0, 0);
+        private Vector2D newTankDir = new Vector2D(0, 1);
 
-        private Dictionary<long, int> tankIDs;
-        private Dictionary<int, Vector2D> tankVelocities;
-        private Dictionary<long, Socket> sockets;
-        private Dictionary<int, int> numOfPowerups;
-        private Dictionary<int, int> shotDelays;
-        private List<int> deadProjectiles;
-        private List<int> deadPowerups;
-        private List<int> disconnectedTanks;
+        private Dictionary<long, int> tankIDs; //Holds socket to tankID
+
+        private Dictionary<int, Vector2D> tankVelocities; //holds TankID to current velocity
+
+        private Dictionary<long, Socket> sockets; //Holds socketstateID to its socket
+
+        private Dictionary<int, int> numOfPowerups; //maps tankID to how many powerups it has collected
+
+        private Dictionary<int, int> shotDelays; //Maps tankID to time before it can fire again
+
+        private Dictionary<int, int> respawnDelay; //Maps tankID to time before it can respawn
+
+        private List<int> deadProjectiles; //List of IDs of projectiles that have come into contact with something
+
+        private List<int> deadPowerups; //List of powerup IDs that have been collected
+
+        private List<int> disconnectedTanks; //List of tanks that disconnected
 
         public World world = new World();
 
         private Stopwatch watch = new Stopwatch();
-
+        /// <summary>
+        /// Creates new server object and starts by calling run
+        /// </summary>
+        /// <param name="args"></param>
         static void Main(string[] args)
         {
             Server s = new Server();
             s.Run();
             Console.Read();
         }
+        /// <summary>
+        /// Constructor for server
+        /// Initializes all lists and dictionaries
+        /// </summary>
         public Server()
         {
             tankIDs = new Dictionary<long, int>();
@@ -70,8 +89,13 @@ namespace TankWars
             numOfPowerups = new Dictionary<int, int>();
             shotDelays = new Dictionary<int, int>();
             disconnectedTanks = new List<int>();
+            respawnDelay = new Dictionary<int, int>();
         }
-
+        /// <summary>
+        /// To be called by a server object
+        /// Parses XML file with the server settings
+        /// Starts server and listens for new connections while updating world based on server setting MSPerFrame
+        /// </summary>
         public void Run()
         {
             try
@@ -84,6 +108,7 @@ namespace TankWars
                 return;
             }
             TcpListener listener = Networking.StartServer(SetupMessageReceive, 11000);
+            Console.WriteLine("Server is running.");
             watch.Start();
             while (true)
             {
@@ -94,20 +119,27 @@ namespace TankWars
             }
 
         }
-
+        /// <summary>
+        /// Updates the world and serializes all objects in JSON to be sent to each client
+        /// Updates projectile locations checking for collisions updating score and health as needed
+        /// Checks beam and powerup collisions updating each object as required
+        /// Calculates tank location based on velocity, and sets new tank location upon respawn
+        /// </summary>
         private void UpdateWorld()
         {
             lock (world)
-            {
-                if (++powerupCounter > PowerupRespawnRate)
+            { 
+                if (++powerupCounter > PowerupRespawnRate) //If enough time has passed a new powerup can be added to the game
                 {
                     if (world.Powerups.Count < MaxPowerups)
                         world.Powerups.Add(powerupID, new Powerup(powerupID++, RandomSpawnLocation(0)));
                     powerupCounter = 0;
                 }
 
+                
                 StringBuilder sb = new StringBuilder();
                 string jsonString = "";
+
 
                 foreach (Projectile p in world.Projectiles.Values)
                 {
@@ -117,10 +149,11 @@ namespace TankWars
                     bool collided = false;
                     foreach (Tank t in world.Tanks.Values)
                     {
-                        if (t.ID != p.Owner && t.HP > 0 && TankHit(t.Location, p.Location))
+                        if (t.ID != p.Owner && t.HP > 0 && TankHit(t.Location, p.Location)) //Checks if tank was hit by the projectile
                         {
                             if(--t.HP == 0)
                             {
+                                
                                 world.Tanks[p.Owner].Score++; // increment the score of the tank who shot the bullet
                                 t.Died = true;
                             }                            
@@ -130,7 +163,7 @@ namespace TankWars
                     }
                     foreach(Wall w in world.Walls.Values)
                     {
-                        if(ObjCollidesWithWall(p.Location, w, 0))
+                        if(ObjCollidesWithWall(p.Location, w, 0)) //Checks if projectile hit wall
                         {
                             p.Died = true;
                             deadProjectiles.Add(p.ID);
@@ -138,7 +171,7 @@ namespace TankWars
                         }
                     }
 
-                    if (!collided)
+                    if (!collided) //Updates location
                         p.Location += v;
                     else
                     {
@@ -152,7 +185,7 @@ namespace TankWars
                     sb.Append('\n');
                 }
 
-                foreach (int proj in deadProjectiles)
+                foreach (int proj in deadProjectiles) //Removes any projectiles marked as dead from dictionary
                 {
                     world.Projectiles.Remove(proj);
                 }
@@ -163,7 +196,7 @@ namespace TankWars
                 {
                     foreach (Tank t in world.Tanks.Values)
                     {
-                        if (t.ID != b.Owner && Intersects(b.Origin, b.Direction, t.Location, TankSize / 2))
+                        if (t.ID != b.Owner && Intersects(b.Origin, b.Direction, t.Location, TankSize / 2)) //Checks if beam hit tank
                         {
                             t.Died = true;
                             t.HP = 0;
@@ -183,7 +216,7 @@ namespace TankWars
                     
                     foreach(Tank t in world.Tanks.Values)
                     {
-                        if(TankHit(t.Location, pow.Location))
+                        if(TankHit(t.Location, pow.Location)) //Checks if powerup was collected
                         {
                             numOfPowerups[t.ID]++;
                             pow.Died  = true;
@@ -196,16 +229,30 @@ namespace TankWars
                     sb.Append(jsonString);
                     sb.Append('\n');
                 }
-                foreach(int ID in deadPowerups)
+                foreach(int ID in deadPowerups) //Removes any projectiles marked as dead from dictionary
                 {
                     world.Powerups.Remove(ID);
                 }
                 deadPowerups.Clear();
 
+                
+
                 foreach (Tank t in world.Tanks.Values)
                 {
                     if (!t.Disconnected)
                     {
+                        if(t.HP == 0)
+                        {
+
+                            if (--respawnDelay[t.ID] == 0) //Check if enough time has passed so tank can respawn
+                            {
+                                t.HP = 3;
+                                respawnDelay[t.ID] = RespawnRate;
+                                t.Location = RandomSpawnLocation(TankSize);
+                            }
+                               
+
+                        }
                         if (shotDelays[t.ID] != 0)
                         {
                             shotDelays[t.ID]--; // increment shot delay for each tank if the tank's shot delay isn't 0
@@ -247,6 +294,7 @@ namespace TankWars
                     shotDelays.Remove(tankID);
                     tankVelocities.Remove(tankID);
                     numOfPowerups.Remove(tankID);
+                    respawnDelay.Remove(tankID);
                 }
 
                 disconnectedTanks.Clear();
@@ -259,15 +307,27 @@ namespace TankWars
             }
         }
 
+
+        /// <summary>
+        /// Call back for all new incoming connections
+        /// Sets state.OnNetworkAction to the call back that validates name
+        /// </summary>
+        /// <param name="state">the client state</param>
         private void SetupMessageReceive(SocketState state)
         {
             state.OnNetworkAction = CheckName;
 
             Networking.GetData(state);
         }
-
+        /// <summary>
+        /// Checks that the name is valid and prints that player has joined
+        /// Adds player to all necessary dictionaries
+        /// Sets state.OnNetworkAction SendWalls then invokes it
+        /// </summary>
+        /// <param name="state">the client state</param>
         private void CheckName(SocketState state)
         {
+
             string s = state.GetData();
             if (s.EndsWith('\n'))
             {
@@ -275,26 +335,30 @@ namespace TankWars
 
                 //send worldsize and id and walls
                 Console.WriteLine("Player " + tankID + " " + s.Trim('\n') + " joined.");
-
-                
                 lock (world)
                 {
                     Tank t = new Tank(tankID, RandomSpawnLocation(TankSize), newTankDir, s.Trim('\n'), newTankDir);
                     shotDelays.Add(tankID, FramesPerShot);
-                    tankIDs.Add(state.ID, tankID);
                     tankVelocities.Add(tankID, new Vector2D(0, 0));
+                    respawnDelay.Add(tankID, RespawnRate);
                     world.Tanks.Add(tankID, t);
-                    sockets.Add(state.ID, state.TheSocket);
                     numOfPowerups.Add(tankID, 0);
+                    Networking.Send(state.TheSocket, tankID + "\n" + UniverseSize + "\n");
+                    sockets.Add(state.ID, state.TheSocket);
+                    tankIDs.Add(state.ID, tankID++);
                 }
 
-                Networking.Send(state.TheSocket, tankID++ + "\n" + UniverseSize + "\n");
+                
                 state.OnNetworkAction = SendWalls;
                 state.OnNetworkAction(state);
             }
 
         }
-
+        /// <summary>
+        /// Sends walls to the client
+        /// Sets the state.OnNetworkAction to the event loop that repeadtly listens for control commands
+        /// </summary>
+        /// <param name="state">the client state</param>
         private void SendWalls(SocketState state)
         {
             string jsonString = null;
@@ -308,6 +372,12 @@ namespace TankWars
 
         }
 
+        /// <summary>
+        /// Event loop that continously receives data(control commands) from the client
+        /// Stops the event loop if the client disconnects
+        /// Ensures that all elements of the control command are valid through helper methods
+        /// </summary>
+        /// <param name="state">the client state</param>
         private void ReceiveControlCommands(SocketState state)
         {
             if (state.ErrorOccurred)
@@ -316,6 +386,7 @@ namespace TankWars
                 world.Tanks[tankIDs[state.ID]].Disconnected = true;
                 tankIDs.Remove(state.ID);
                 sockets.Remove(state.ID);
+
                 return;
             }
 
@@ -342,6 +413,7 @@ namespace TankWars
                     {
                         ControlCmd cmd = JsonConvert.DeserializeObject<ControlCmd>(s);
 
+                        //Handle each component of control command seperately
                         HandleTdir(cmd.Tdir, state.ID);
                         HandleMoving(cmd.Moving, state.ID);
                         HandleFire(cmd.Fire, state.ID);
@@ -354,7 +426,11 @@ namespace TankWars
 
             Networking.GetData(state);
         }
-
+        /// <summary>
+        /// Private helper method to update direction that turret is facing
+        /// </summary>
+        /// <param name="tdir"></param>
+        /// <param name="stateID"></param>
         private void HandleTdir(Vector2D tdir, long stateID)
         {
             if (tankIDs.TryGetValue(stateID, out int tankID))
@@ -362,7 +438,14 @@ namespace TankWars
                 world.Tanks[tankID].Aiming = tdir;
             }
         }
-
+        /// <summary>
+        /// Ensures all fire commands are valid
+        /// Main shot will only be processed if the delay between shots has passed
+        /// Beam shots will only be processed if the player has a powerup
+        /// Commands will only be processed if the hp is above 0
+        /// </summary>
+        /// <param name="fire"></param>
+        /// <param name="stateID"></param>
         private void HandleFire(string fire, long stateID)
         {
             if (tankIDs.TryGetValue(stateID, out int tankID))
@@ -386,7 +469,11 @@ namespace TankWars
             }
 
         }
-
+        /// <summary>
+        /// Updates the tank velocity in the direction state by "moving"
+        /// </summary>
+        /// <param name="moving"> Direction the tank is moving </param>
+        /// <param name="stateID"></param>
         private void HandleMoving(string moving, long stateID)
         {
             if (tankIDs.TryGetValue(stateID, out int tankID))
@@ -416,7 +503,9 @@ namespace TankWars
 
             }
         }
-
+        /// <summary>
+        /// Reads the XML file containing all the server settings
+        /// </summary>
         private void ReadSettingsXml()
         {
             using (XmlReader reader = XmlReader.Create(@"..\..\..\..\Resources\settings.xml"))
@@ -448,7 +537,11 @@ namespace TankWars
                 }
             }
         }
-
+        /// <summary>
+        /// Helper method to read the properties of a wall
+        /// Creates a new Wall object and adds it the the dictionary in the world that contains walls
+        /// </summary>
+        /// <param name="reader"></param>
         private void ParseWallXml(XmlReader reader)
         {
             // at this point, the reader has encountered a <Wall> tag
@@ -553,7 +646,11 @@ namespace TankWars
 
             }
         }
-
+        /// <summary>
+        /// Private helper method that parses a numeric setting from the XML file and assigns it
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="settingsVal"></param>
         private void ParseSettingsXmlVal(XmlReader reader, ref int settingsVal)
         {
             reader.Read();
@@ -609,13 +706,15 @@ namespace TankWars
         }
 
         /// <summary>
-        /// TODO
-        ///
+        /// Checks if an object collides with a wall
+        /// Determines if it is a vertical or horizontal wall
+        /// Calculates the max perimeter of the wall and determines if obj X and y are within
+        /// Returns true if within, false otherwise
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="wall"></param>
-        /// <param name="objSize"></param>
-        /// <returns></returns>
+        /// <param name="obj"> Objects location </param>
+        /// <param name="wall"> Wall to check against </param>
+        /// <param name="objSize"> Size of the object </param>
+        /// <returns> Returns true if collides, false otherwise </returns>
         private static bool ObjCollidesWithWall(Vector2D obj, Wall wall, int objSize)
         {
             int halfWallSize = WallSize / 2;
@@ -674,7 +773,9 @@ namespace TankWars
         }
 
         /// <summary>
-        /// TODO
+        /// Determines if tank and a projectile/powerup make contact
+        /// Calculates perimeter of tank and returns true if tank
+        /// collided and false otherwise
         /// </summary>
         /// <param name="tank"></param>
         /// <param name="projectile"></param>
@@ -696,22 +797,23 @@ namespace TankWars
         }
 
         /// <summary>
-        /// TODO
+        /// Generates random location within the world that does not come into contact with a wall
+        /// Uses ObjCollidesWithWall to determine if random location is in a wall
         /// </summary>
+        /// <param name="size"> size of the obj </param>
         /// <returns></returns>
         private Vector2D RandomSpawnLocation(int size)
         {
-            bool collision = false;
-          
+            
+            
             while (true)
             {
+                bool collision = false;
                 Random rand = new Random();
-
                 double x = rand.Next((-UniverseSize / 2) + WallSize, (UniverseSize / 2) - WallSize);
                 double y = rand.Next((-UniverseSize / 2) + WallSize, (UniverseSize / 2) - WallSize);
 
                 Vector2D randLoc = new Vector2D(x, y);
-
                 foreach (Wall w in world.Walls.Values)
                 {
                     if (ObjCollidesWithWall(randLoc, w, size))
@@ -719,6 +821,7 @@ namespace TankWars
                         collision = true;
                     }
                 }
+
                 if (!collision)
                     return randLoc;
             }
