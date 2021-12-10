@@ -200,6 +200,7 @@ namespace TankWars
                         {
                             t.Died = true;
                             t.HP = 0;
+                            world.Tanks[b.Owner].Score++;
                         }
                     }
 
@@ -224,7 +225,7 @@ namespace TankWars
                         }
                     }
 
-
+                    
                     jsonString = JsonConvert.SerializeObject(pow);
                     sb.Append(jsonString);
                     sb.Append('\n');
@@ -275,6 +276,7 @@ namespace TankWars
                     else
                     {
                         disconnectedTanks.Add(t.ID);
+                        t.HP = 0;
                     }
 
                     jsonString = JsonConvert.SerializeObject(t);
@@ -339,19 +341,27 @@ namespace TankWars
                 lock (world)
                 {
                     Tank t = new Tank(tankID, RandomSpawnLocation(TankSize), newTankDir, s.Trim('\n'), newTankDir);
+                   
+                    Networking.Send(state.TheSocket, tankID + "\n" + UniverseSize + "\n");
+                    string jsonString = null;
+                    foreach (Wall w in world.Walls.Values)
+                    {
+                        jsonString = JsonConvert.SerializeObject(w) + '\n';
+                        Networking.Send(state.TheSocket, jsonString);
+                    }
                     shotDelays.Add(tankID, FramesPerShot);
                     tankVelocities.Add(tankID, new Vector2D(0, 0));
                     respawnDelay.Add(tankID, RespawnRate);
                     world.Tanks.Add(tankID, t);
                     numOfPowerups.Add(tankID, 0);
-                    Networking.Send(state.TheSocket, tankID + "\n" + UniverseSize + "\n");
                     sockets.Add(state.ID, state.TheSocket);
                     tankIDs.Add(state.ID, tankID++);
                 }
 
 
-                state.OnNetworkAction = SendWalls;
-                state.OnNetworkAction(state);
+                
+                state.OnNetworkAction = ReceiveControlCommands;
+                Networking.GetData(state);
             }
 
         }
@@ -363,13 +373,8 @@ namespace TankWars
         /// <param name="state">the client state</param>
         private void SendWalls(SocketState state)
         {
-            string jsonString = null;
-            foreach (Wall w in world.Walls.Values)
-            {
-                jsonString = JsonConvert.SerializeObject(w) + '\n';
-                Networking.Send(state.TheSocket, jsonString);
-            }
-            state.OnNetworkAction = ReceiveControlCommands;
+            
+            
             Networking.GetData(state);
 
         }
@@ -384,48 +389,68 @@ namespace TankWars
         {
             if (state.ErrorOccurred)
             {
-                Console.WriteLine("Cient " + tankIDs[state.ID] + " disconnected.");
-                world.Tanks[tankIDs[state.ID]].Disconnected = true;
-                tankIDs.Remove(state.ID);
-                sockets.Remove(state.ID);
+                lock (world)
+                {
+                    Console.WriteLine("Cient " + tankIDs[state.ID] + " disconnected.");
+                    world.Tanks[tankIDs[state.ID]].Disconnected = true;
+                    tankIDs.Remove(state.ID);
+                    sockets.Remove(state.ID);
+                }
+                return;
+            }
+            try
+            {
+                string totalData = state.GetData();
+                string[] parts = Regex.Split(totalData, @"(?<=[\n])");
+                lock (world)
+                {
+                    foreach (string s in parts)
+                    {
+                        // This will be the final "part" in the data buffer
+                        if (!s.EndsWith("\n"))
+                            continue;
+
+                        // Ignore empty strings added by the regex splitter
+                        if (s.Length == 0)
+                        {
+                            state.RemoveData(0, s.Length);
+                            continue;
+                        }
+
+                        JObject obj = JObject.Parse(s);
+
+                        JToken token = obj["moving"];
+                        if (token != null)
+                        {
+                            ControlCmd cmd = JsonConvert.DeserializeObject<ControlCmd>(s);
+
+                            //Handle each component of control command seperately
+                            HandleTdir(cmd.Tdir, state.ID);
+                            HandleMoving(cmd.Moving, state.ID);
+                            HandleFire(cmd.Fire, state.ID);
+
+                            state.RemoveData(0, s.Length);
+                            continue;
+                        }
+                    }
+                }
+                Networking.GetData(state);
+            }
+            catch
+            {
+                lock (world)
+                {
+                    Console.WriteLine("Cient " + tankIDs[state.ID] + " disconnected.");
+                    world.Tanks[tankIDs[state.ID]].Disconnected = true;
+                    tankIDs.Remove(state.ID);
+                    sockets.Remove(state.ID);
+                    state.TheSocket.Close(); 
+                   
+                }
 
                 return;
             }
-
-            string totalData = state.GetData();
-            string[] parts = Regex.Split(totalData, @"(?<=[\n])");
-            lock (world)
-            {
-                foreach (string s in parts)
-                {
-                    // This will be the final "part" in the data buffer
-                    if (!s.EndsWith("\n"))
-                        continue;
-
-                    // Ignore empty strings added by the regex splitter
-                    if (s.Length == 0)
-                    {
-                        state.RemoveData(0, s.Length);
-                        continue;
-                    }
-                    JObject obj = JObject.Parse(s);
-
-                    JToken token = obj["moving"];
-                    if (token != null)
-                    {
-                        ControlCmd cmd = JsonConvert.DeserializeObject<ControlCmd>(s);
-
-                        //Handle each component of control command seperately
-                        HandleTdir(cmd.Tdir, state.ID);
-                        HandleMoving(cmd.Moving, state.ID);
-                        HandleFire(cmd.Fire, state.ID);
-
-                        state.RemoveData(0, s.Length);
-                        continue;
-                    }
-                }
-            }
-            Networking.GetData(state);
+            
         }
 
         /// <summary>
@@ -801,8 +826,9 @@ namespace TankWars
         }
 
         /// <summary>
-        /// Generates random location within the world that does not come into contact with a wall
+        /// Generates random location within the world that does not come into contact with a wall or tanks
         /// Uses ObjCollidesWithWall to determine if random location is in a wall
+        /// 
         /// </summary>
         /// <param name="size"> size of the obj </param>
         /// <returns></returns>
@@ -822,6 +848,11 @@ namespace TankWars
                     {
                         collision = true;
                     }
+                }
+                foreach (Tank t in world.Tanks.Values)
+                {
+                    if (TankHit(t.Location, randLoc))
+                        collision = true;
                 }
 
                 if (!collision)
