@@ -366,18 +366,7 @@ namespace TankWars
 
         }
 
-        /// <summary>
-        /// Sends walls to the client
-        /// Sets the state.OnNetworkAction to the event loop that repeadtly listens for control commands
-        /// </summary>
-        /// <param name="state">the client state</param>
-        private void SendWalls(SocketState state)
-        {
-            
-            
-            Networking.GetData(state);
 
-        }
 
         /// <summary>
         /// Event loop that continously receives data(control commands) from the client
