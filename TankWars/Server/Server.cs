@@ -172,7 +172,18 @@ namespace TankWars
                     }
 
                     if (!collided) //Updates location
+                    {
                         p.Location += v;
+                        if (Math.Abs(p.Location.GetX()) > UniverseSize / 2)
+                        {
+                            p.Died = true;
+                        }
+                        else if (Math.Abs(p.Location.GetX()) > UniverseSize / 2)
+                        {
+                            p.Died = true;
+                        }
+                    }
+                        
                     else
                     {
                         p.Died = true;
@@ -225,7 +236,7 @@ namespace TankWars
                         }
                     }
 
-                    
+
                     jsonString = JsonConvert.SerializeObject(pow);
                     sb.Append(jsonString);
                     sb.Append('\n');
@@ -269,8 +280,20 @@ namespace TankWars
                                     break;
                                 }
                             }
+
                             if (!collided)
+                            {
                                 t.Location += tankVelocities[t.ID];
+                                if (Math.Abs(t.Location.GetX()) > UniverseSize/2)
+                                {
+                                    t.Location = new Vector2D(-1 * t.Location.GetX(), t.Location.GetY());
+                                }
+                                else if(Math.Abs(t.Location.GetX()) > UniverseSize / 2)
+                                {
+                                    t.Location = new Vector2D(t.Location.GetX(), -1 * t.Location.GetY());
+                                }
+                            }
+                            
                         }
                     }
                     else
@@ -341,7 +364,7 @@ namespace TankWars
                 lock (world)
                 {
                     Tank t = new Tank(tankID, RandomSpawnLocation(TankSize), newTankDir, s.Trim('\n'), newTankDir);
-                   
+
                     Networking.Send(state.TheSocket, tankID + "\n" + UniverseSize + "\n");
                     string jsonString = null;
                     foreach (Wall w in world.Walls.Values)
@@ -359,7 +382,7 @@ namespace TankWars
                 }
 
 
-                
+
                 state.OnNetworkAction = ReceiveControlCommands;
                 Networking.GetData(state);
             }
@@ -433,13 +456,13 @@ namespace TankWars
                     world.Tanks[tankIDs[state.ID]].Disconnected = true;
                     tankIDs.Remove(state.ID);
                     sockets.Remove(state.ID);
-                    state.TheSocket.Close(); 
-                   
+                    state.TheSocket.Close();
+
                 }
 
                 return;
             }
-            
+
         }
 
         /// <summary>
